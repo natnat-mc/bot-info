@@ -7,6 +7,11 @@
 		"timezone": "Europe/Paris",
 		"UTCOffset": 2
 	},
+	"store": {
+		"directSaveThreshold": 5,
+		"saveInterval": 5000,
+		"forceSaveInterval": 60000
+	},
 	"groups": [
 		{
 			"name": "G1S1",
