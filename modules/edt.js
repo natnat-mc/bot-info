@@ -1,3 +1,4 @@
+const Discord=require('discord.js');
 const dates=require('./dates');
 
 shared.commands.edt=function(msg, args) {
@@ -20,6 +21,7 @@ shared.commands.edt=function(msg, args) {
 	} else if(args[1]!==undefined) {
 		return msg.reply("**ERROR**: wrong date format");
 	}
+	/*
 	let prevDate;
 	let text='';
 	evts.forEach(function(a) {
@@ -41,4 +43,15 @@ shared.commands.edt=function(msg, args) {
 	});
 	if(text=='') text='Pas de cours sur cette période';
 	return msg.reply(text);
-}
+	*/
+	let embed=new Discord.RichEmbed();
+	embed.setTitle("Emploi du temps");
+	embed.setURL("http://edt.univ-lyon1.fr");
+	embed.setTimestamp(new Date());
+	evts.forEach(function(evt) {
+		let info=dates.datesToRange(evt.start, evt.end);
+		info+=' @ '+evt.loc;
+		embed.addField(evt.name, info);
+	});
+	return msg.reply(embed);
+};
