@@ -3,6 +3,10 @@ const config=require('./config');
 
 let store={}
 
+try {
+	fs.mkdirSync('./data');
+} catch(e) {}
+
 function getStore(name) {
 	return new Promise(function(ok, fail) {
 		if(store[name]) {
@@ -55,10 +59,14 @@ function createStore(name) {
 					written: 1
 				};
 				writeStore(name);
-				return getStore(name);
+				return ok(getStore(name).then(() => true));
 			});
 		}
 	})
+}
+
+function ensureStore(name) {
+	return createStore(name).catch(() => false).then(() => true);
 }
 
 function get(name, key) {
@@ -101,5 +109,6 @@ function set(name, key, value) {
 
 exports.writeStore=writeStore;
 exports.createStore=createStore;
+exports.ensureStore=ensureStore;
 exports.get=get;
 exports.set=set;
