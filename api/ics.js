@@ -110,4 +110,6 @@ class ICS {
 	}
 }
 
+ICS.Event=Event;
+
 module.exports=exports=ICS;
