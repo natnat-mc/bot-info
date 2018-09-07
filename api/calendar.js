@@ -2,6 +2,7 @@ const fs=require('fs');
 const request=require('request');
 const ICS=require('./ics');
 const dates=require('./dates');
+const config=require('./config');
 
 const EE=require('events');
 class Calendar extends EE {
@@ -9,6 +10,7 @@ class Calendar extends EE {
 		super();
 		this.url=url;
 		this.ics=null;
+		setInterval(this.update, config('calendar.updateInterval'));
 	}
 	update() {
 		request(this.url, (err, res, body) => {

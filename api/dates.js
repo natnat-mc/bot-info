@@ -23,9 +23,20 @@ function dateToParts(date) {
 	for(i=0; i<parts.length; i++) keys[parts[i].type]=parts[i].value;
 	return keys;
 }
+function datesToRange(a, b) {
+	a=dateToParts(a);
+	b=dateToParts(b);
+	if(a.day==b.day&&a.month==b.month&&a.year==b.year) {
+		return a.day+'/'+a.month+'/'+a.year+' '+a.hour+':'+a.minute+':'+a.second+' -> '+b.hour+':'+b.minute+':'+b.second;
+	} else {
+		return dateToTime(a)+' -> '+dateToTime(b);
+	}
+}
 
 exports.dateToTime=dateToTime;
 exports.dateToParts=dateToParts;
+exports.datesToRange=datesToRange;
+
 exports.oneSec=oneSec;
 exports.oneMin=oneMin;
 exports.oneHr=oneHr;

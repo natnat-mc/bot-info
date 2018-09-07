@@ -1,4 +1,4 @@
-const {dateToTime}=require('./dates');
+const {dateToTime, datesToRange}=require('./dates');
 
 function parseDate(str) {
 	let time={
@@ -34,7 +34,9 @@ class Event {
 
 	get short() {
 		let time='NO DATE';
-		if(this.start) {
+		if(this.start&&this.end) {
+			time=datesToRange(this.start, this.end);
+		} else if(this.start) {
 			time=dateToTime(this.start);
 			if(this.end) time+='-'+dateToTime(this.end);
 		}
