@@ -55,3 +55,23 @@ shared.commands.edt=function(msg, args) {
 	});
 	return msg.reply(embed);
 };
+
+shared.commands.edt.usage=[
+	{
+		name: 'group',
+		required: true,
+		desc: "Le groupe dont il faut afficher l'EDT, de la forme **g**n**s**n"
+	},
+	{
+		name: 'time',
+		required: false,
+		desc: "La plage à afficher. `next` affiche la semaine prochaine, `today` affiche aujourd'hui, `tomorrow` affiche demain, une date explicite affiche le jour en question et rien affiche la semaine en cours (une semaine commence le dimanche pour le bot)"
+	}
+];
+
+shared.commands.edt.help={
+	name: 'edt',
+	desc: "Affiche l'emploi du temps sous la forme d'un RichEmbed. Les emplois du temps sont mis à jour toutes les heures.",
+	admin: false,
+	category: 'util'
+};

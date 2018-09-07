@@ -40,6 +40,26 @@ store.ensureStore('reminders').then(function() {
 			msg.reply('Rappel enregistré pour '+dates.dateToTime(date));
 		});
 	};
+	
+	shared.commands.remind.usage=[
+		{
+			name: 'time',
+			required: true,
+			desc: "Le temps avant le rappel, un nombre avec un suffixe entre `s`, `m`, `h`, `d` et `w`"
+		},
+		{
+			name: 'text',
+			required: true,
+			desc: "Le texte qui va être envoyé par le bot quand le temps sera écoulé"
+		}
+	];
+	shared.commands.remind.help={
+		name: 'remind',
+		desc: "Ajoute un rappel",
+		admin: false,
+		category: 'util'
+	};
+	
 	setInterval(function() {
 		store.get('reminders').then(function(reminders) {
 			for(let chanId in reminders) {

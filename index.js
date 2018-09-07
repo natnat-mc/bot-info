@@ -11,8 +11,23 @@ const bot=new discord.Client();
 shared.bot=bot;
 
 bot.on('ready', () => {
+	bot.user.setGame(config('bot.prefix')+'help');
 	console.log("Logged in!");
 });
+
+bot.on('warning', (warn) => {
+	console.error('Bot warning', warn);
+});
+
+bot.on('error', (err) => {
+	console.error('Bot error', err);
+});
+
+if(config('bot.debug')) {
+	bot.on('debug', (txt) => {
+		console.error('Bot debug', txt);
+	});
+}
 
 bot.on('message', msg => {
 	try {

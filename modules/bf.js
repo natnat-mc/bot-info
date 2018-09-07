@@ -74,3 +74,18 @@ shared.commands.brainfuck=function(msg, args) {
 	}
 	return msg.reply('The code took too long to execute\n'+result);
 };
+
+shared.commands.brainfuck.usage=[
+	{
+		name: 'code',
+		required: true,
+		desc: "Le code BrainFuck à executer"
+	}
+];
+
+shared.commands.brainfuck.help={
+	name: 'brainfuck',
+	desc: "Execute du BrainFuck",
+	admin: false,
+	category: 'fun'
+};
