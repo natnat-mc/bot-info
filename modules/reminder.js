@@ -11,6 +11,8 @@ store.ensureStore('reminders').then(function() {
 		let txt=args.join(' ');
 		if(time===undefined) {
 			return msg.reply('**Usage**: **_'+config('bot.prefix')+'remind_** _<timeout>_ _<message>_');
+		} else if(!/^[0-9]{1,5}[a-z]$/.test(time)) {
+			return msg.reply('**ERROR**: wrong time format');
 		} else if(time.endsWith('s')) {
 			time=dates.oneSec*+time.substr(0, time.length-1);
 		} else if(time.endsWith('m')) {
@@ -22,7 +24,7 @@ store.ensureStore('reminders').then(function() {
 		} else if(time.endsWith('w')) {
 			time=dates.oneWeek*+time.substr(0, time.length-1);
 		} else {
-			return msg.reply('**Error**: unknown time format');
+			return msg.reply('**ERROR**: unknown suffix format');
 		}
 		let date=new Date(Date.now()+time);
 		store.get('reminders', msg.channel.id+'.length').catch(function() {
@@ -38,7 +40,7 @@ store.ensureStore('reminders').then(function() {
 			msg.reply('**ERROR**: couldn\'t set reminder');
 		}).then(function() {
 			msg.reply('Rappel enregistré pour '+dates.dateToTime(date));
-		}).then(function() {
+		}).catch(function() {
 			msg.reply("Genre vraiment?");
 		});
 	};
