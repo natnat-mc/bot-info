@@ -138,6 +138,14 @@ class Loader {
 				});
 			});
 		}
+		let module=this.loaded[this.path+'/'+name];
+		if(module.unload) {
+			try {
+				module.unload();
+			} catch(e) {
+				console.error('Error unloading module', name, e);
+			}
+		}
 		return Promise.resolve(delete this.loaded[this.path+'/'+name]);
 	}
 
