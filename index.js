@@ -1,4 +1,4 @@
-const discord=require('discord.js');
+const Discord=require('discord.js');
 const fs=require('fs');
 
 const shared=require('./api/shared');
@@ -6,12 +6,13 @@ const shared=require('./api/shared');
 const config=require('./api/config');
 const commands=require('./api/commands');
 const Calendar=require('./api/calendar');
+const Loader=require('./api/loader');
 
-const bot=new discord.Client();
+const bot=new Discord.Client();
 shared.bot=bot;
 
 bot.on('ready', () => {
-	bot.user.setGame(config('bot.prefix')+'help');
+	bot.user.setActivity(config('bot.prefix')+'help');
 	console.log("Logged in!");
 });
 
@@ -48,4 +49,15 @@ for(let i=0; i<config('groups.length'); i++) {
 	shared.calendars[group.name].on('update', () => console.log('added calendar '+group.name));
 }
 
-require('./api/modules')
+let loader=new Loader('./modules');
+loader.loadAll().then(() => {
+	console.log('Loaded all modules');
+}).catch((e) => {
+	console.error(e);
+});
+
+let repl=require('repl').start('> ');
+repl.context.shared=shared;
+repl.context.config=config;
+repl.context.bot=bot;
+repl.context.loader=loader;

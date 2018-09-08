@@ -22,7 +22,6 @@ shared.commands.brainfuck=function(msg, args) {
 				if(ptr<0) ptr=tape.length-1;
 				break;
 			case '.':
-				console.log(tape[ptr], String.fromCharCode(tape[ptr]));
 				result+=String.fromCharCode(tape[ptr]);
 				break;
 			case '[':
@@ -89,3 +88,5 @@ shared.commands.brainfuck.help={
 	admin: false,
 	category: 'fun'
 };
+
+module.type='command';

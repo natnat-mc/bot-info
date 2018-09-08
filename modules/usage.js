@@ -38,3 +38,5 @@ shared.commands.usage.help={
 	admin: false,
 	category: 'core'
 };
+
+module.type='command';

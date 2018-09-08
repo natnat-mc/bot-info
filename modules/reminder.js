@@ -100,3 +100,5 @@ store.ensureStore('reminders').then(function() {
 }).catch(function(e) {
 	console.error(e);
 });
+
+module.type='command';

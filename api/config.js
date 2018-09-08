@@ -1,6 +1,6 @@
 const fs=require('fs');
 
-const data=JSON.parse(fs.readFileSync('./config.json', 'utf8'));
+let data;
 
 function get(key) {
 	key=key.split('.');
@@ -12,4 +12,11 @@ function get(key) {
 	return obj;
 }
 
+function reload() {
+	data=JSON.parse(fs.readFileSync('./config.json', 'utf8'));
+}
+
+reload();
+
 module.exports=exports=get;
+exports.reload=reload;

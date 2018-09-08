@@ -10,7 +10,7 @@ class Calendar extends EE {
 		super();
 		this.url=url;
 		this.ics=null;
-		setInterval(this.update, config('calendar.updateInterval'));
+		setInterval(this.update.bind(this), config('calendar.updateInterval'));
 	}
 	update() {
 		request(this.url, (err, res, body) => {

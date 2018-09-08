@@ -56,17 +56,29 @@ class Loader {
 		}).then(function(code) {
 			const context=vm.createContext({}, {name: name});
 
-			context.require=require;
 			context.shared=shared;
 			context.config=config;
+
+			context.console=console;
+			context.require=require;
+			context.Buffer=Buffer;
+			context.clearImmediate=clearImmediate;
+			context.clearInterval=clearInterval;
+			context.clearTimeout=clearTimeout;
+			context.process=process;
+			context.setImmediate=setImmediate;
+			context.setInterval=setInterval;
+			context.setTimeout=setTimeout;
 
 			context.module={}
 			context.module.name=name;
 			context.module.exports={};
 			context.module.loader=self;
+			context.module.loadTime=new Date();
 
 			context.exports=context.module.exports;
 			context.loader=context.module.loader;
+			context.global=context;
 
 			vm.runInContext(code, context, {
 				filename: filename,
@@ -121,7 +133,7 @@ class Loader {
 				self.queue.push(function() {
 					ok(self.unload(name));
 				});
-			})
+			});
 		}
 		return Promise.resolve(delete this.loaded[this.path+'/'+name]);
 	}
@@ -129,9 +141,17 @@ class Loader {
 	reload(name) {
 		return this.unload(name).then(this.load.bind(this, name));
 	}
+	
+	reloadAll() {
+		const self=this;
+		return Promise.all(this.list.map(function(module) {
+			return self.reload(module.name);
+		}));
+	}
+	
+	loadAll() {
+		return this.require(this.available);
+	}
 }
 
-const loader=new Loader('./modules');
-loader.available.forEach(loader.load.bind(loader));
-
-module.exports=exports=loader;
+module.exports=exports=Loader;

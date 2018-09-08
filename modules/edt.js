@@ -21,29 +21,6 @@ shared.commands.edt=function(msg, args) {
 	} else if(args[1]!==undefined) {
 		return msg.reply("**ERROR**: wrong date format");
 	}
-	/*
-	let prevDate;
-	let text='';
-	evts.forEach(function(a) {
-		text+='\n';
-		let date=dates.dateToParts(a.start);
-		let day=date.day+'/'+date.month+'/'+date.year;
-		if(prevDate!=day) {
-			text+='**['+day+']**\n';
-			prevDate=day;
-		}
-		text+='*'+date.hour+':'+date.minute;
-		if(a.end) {
-			let endDate=dates.dateToParts(a.end);
-			text+=' -> '+endDate.hour+':'+endDate.minute;
-		}
-		text+='*: ';
-		text+='**'+a.name+'**';
-		if(a.loc) text+=' @ '+a.loc;
-	});
-	if(text=='') text='Pas de cours sur cette période';
-	return msg.reply(text);
-	*/
 	let embed=new Discord.RichEmbed();
 	embed.setTitle("Emploi du temps");
 	embed.setURL("http://edt.univ-lyon1.fr");
@@ -75,3 +52,5 @@ shared.commands.edt.help={
 	admin: false,
 	category: 'util'
 };
+
+module.type='command';

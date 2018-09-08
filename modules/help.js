@@ -53,3 +53,5 @@ shared.commands.help.help={
 	admin: false,
 	category: 'core'
 };
+
+module.type='command';
