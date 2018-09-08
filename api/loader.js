@@ -54,7 +54,10 @@ class Loader {
 			filename=file+'/index.js';
 			return readFile(filename, {encoding: 'utf8'});
 		}).then(function(code) {
-			const context=vm.createContext({}, {name: name});
+			const context=vm.createContext({}, {
+				name: name,
+				displayErrors: true
+			});
 
 			context.shared=shared;
 			context.config=config;

@@ -32,7 +32,9 @@ if(config('bot.debug')) {
 
 bot.on('message', msg => {
 	try {
-		if(msg.content.startsWith(config('bot.prefix'))) commands(msg);
+		if(msg.content.startsWith(config('bot.prefix')) && !msg.author.bot && msg.content!=config('bot.prefix')) {
+			commands(msg);
+		}
 	} catch(e) {
 		console.error(e);
 		msg.reply('ERROR');
@@ -46,7 +48,7 @@ for(let i=0; i<config('groups.length'); i++) {
 	let group=config('groups.'+i);
 	shared.calendars[group.name]=new Calendar(group.calendar);
 	shared.calendars[group.name].update();
-	shared.calendars[group.name].on('update', () => console.log('added calendar '+group.name));
+	shared.calendars[group.name].on('update', () => console.log('updated calendar '+group.name));
 }
 
 let loader=new Loader('./modules');
