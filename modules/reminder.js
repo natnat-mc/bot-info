@@ -38,6 +38,8 @@ store.ensureStore('reminders').then(function() {
 			msg.reply('**ERROR**: couldn\'t set reminder');
 		}).then(function() {
 			msg.reply('Rappel enregistré pour '+dates.dateToTime(date));
+		}).then(function() {
+			msg.reply("Genre vraiment?");
 		});
 	};
 	

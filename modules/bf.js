@@ -68,6 +68,9 @@ shared.commands.brainfuck=function(msg, args) {
 				break;
 			case '@':
 			case '':
+				if(result.length>1000) {
+					return msg.reply('Success, but output is too long and has been truncated to 1000 characters\n'+result.substr(0, 1000));
+				}
 				return msg.reply('Success\n'+result);
 		}
 	}
