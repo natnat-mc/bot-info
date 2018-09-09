@@ -3,12 +3,12 @@ const dates=require('./dates');
 
 shared.commands.edt=function(msg, args) {
 	if(args.length!=1 && args.length!=2) {
-		return msg.reply("**Usage**: **_"+config('bot.prefix')+"edt_** _<group>_ _[time/period]_\n\tgroup:\tthe group, in __g__*n*__s__*n* format\n\ttime/period:\tnothing for the current week, `next` for next week, `today`, `tomorrow` or an explicit date in `DD/MM[/AAAA]` format");
+		return msg.reply("**ERROR**: wrong command format");
 	}
 	let cal=shared.calendars[args[0].toLowerCase()];
 	if(!cal) return msg.reply("Ce calendrier n\'existe pas");
 	let evts;
-	if(args[1]=='' || args===undefined) evts=cal.getForWeek();
+	if(args[1]==='' || args===undefined || args[1]=='week') evts=cal.getForWeek();
 	else if(args[1]=='today') evts=cal.getForDay();
 	else if(args[1]=='tomorrow') evts=cal.getForDay(new Date(Date.now()+dates.oneDay));
 	else if(args[1]=='next') evts=cal.getForWeek(new Date(Date.now()+dates.oneWeek));
@@ -43,7 +43,7 @@ shared.commands.edt.usage=[
 	{
 		name: 'time',
 		required: false,
-		desc: "La plage à afficher. `next` affiche la semaine prochaine, `today` affiche aujourd'hui, `tomorrow` affiche demain, une date explicite affiche le jour en question et rien affiche la semaine en cours (une semaine commence le dimanche pour le bot)"
+		desc: "La plage à afficher. `next` affiche la semaine prochaine, `today` affiche aujourd'hui, `tomorrow` affiche demain, une date explicite affiche le jour en question et `week` affiche la semaine en cours (une semaine commence le dimanche pour le bot)"
 	}
 ];
 
