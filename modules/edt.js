@@ -2,7 +2,7 @@ const Discord=require('discord.js');
 const dates=require('./dates');
 
 shared.commands.edt=function(msg, args) {
-	if(args.length!=1 && args.length!=2) {
+	if(args.length!=2) {
 		return msg.reply("**ERROR**: wrong command format");
 	}
 	let cal=shared.calendars[args[0].toLowerCase()];
