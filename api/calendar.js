@@ -3,13 +3,46 @@ const request=require('request');
 const ICS=require('./ics');
 const dates=require('./dates');
 const config=require('./config');
+const store=require('./storage');
 
 const EE=require('events');
 class Calendar extends EE {
-	constructor(url) {
+	constructor(url, name) {
 		super();
+		
 		this.url=url;
+		this.name=name;
+		
 		this.ics=null;
+		this.old=null;
+		
+		store.ensureStore('calendar.'+name).then((created) => {
+			if(!created) {
+				return store.get('calendar.'+name, 'list').then(list => {
+					this.ics=new ICS();
+					this.ics.events=list.map(obj => {
+						let evt=new ICS.Event();
+						evt.name=obj.name;
+						if(obj.desc) {
+							evt.desc=obj.desc;
+						}
+						if(obj.loc) {
+							evt.loc=obj.loc;
+						}
+						if(obj.start) {
+							evt.start=new Date(obj.start);
+						}
+						if(obj.end) {
+							evt.end=new Date(obj.end);
+						}
+						return evt;
+					});
+				});
+			}
+		}).then(() => {
+			this.update();
+		});
+		
 		setInterval(this.update.bind(this), config('calendar.updateInterval'));
 	}
 	update() {
@@ -22,7 +55,7 @@ class Calendar extends EE {
 				this.emit('error', new Error('Got a non-200 return code: '+res.statusCode));
 				return false;
 			}
-			let old=this.ics;
+			this.old=this.ics;
 			try {
 				this.ics=ICS.parse(body);
 			} catch(e) {
@@ -30,8 +63,47 @@ class Calendar extends EE {
 				return false;
 			}
 			this.emit('update', this.ics);
+			this.persist();
+			this.once('persisted', this.checkForEdits.bind(this));
 		});
 	}
+	
+	persist() {
+		if(!this.ics) {
+			return false;
+		}
+		store.set('calendar.'+this.name, 'time', Date.now()).then(() => {
+			return store.set('calendar.'+this.name, 'list', this.ics.events);
+		}).then(() => {
+			return this.emit('persisted');
+		}).catch(e => {
+			return this.emit('error', e);
+		});
+	}
+	
+	checkForEdits() {
+		if(!(this.ics && this.old)) {
+			return false;
+		}
+		let diff=ICS.findChanges(this.old, this.ics);
+		let hasChanged=false;
+		if(diff.hasAdded) {
+			this.emit('added', diff.added);
+			hasChanged=true;
+		}
+		if(diff.hasRemoved) {
+			this.emit('removed', diff.removed);
+			hasChanged=true;
+		}
+		if(diff.hasModified) {
+			this.emit('modified', diff.modified);
+			hasChanged=true;
+		}
+		if(hasChanged) {
+			this.emit('changed', diff);
+		}
+	}
+	
 	getForDate(start, end) {
 		return this.ics.getForDate(start, end);
 	}

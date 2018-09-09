@@ -46,8 +46,7 @@ bot.login(config('bot.token'));
 shared.calendars={};
 for(let i=0; i<config('groups.length'); i++) {
 	let group=config('groups.'+i);
-	shared.calendars[group.name]=new Calendar(group.calendar);
-	shared.calendars[group.name].update();
+	shared.calendars[group.name]=new Calendar(group.calendar, group.name);
 	shared.calendars[group.name].on('update', () => console.log('updated calendar '+group.name));
 }
 

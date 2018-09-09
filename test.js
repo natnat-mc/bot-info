@@ -1,17 +1,13 @@
 #!/usr/bin/env node
 const config=require('./api/config');
-const storage=require('./api/storage');
+const Calendar=require('./api/calendar');
+const store=require('./api/storage');
 
-storage.get('calendar.g5s1').then(function(data) {
-	console.log(data);
-	return storage.get('calendar.g5s1', 'list');
-}).then(function(list) {
-	console.log(list);
-	return storage.set('calendar.g5s1', 'list', []);
-}).then(function() {
-	console.log('all done!');
-}).catch(function(err) {
-	console.error(err);
-});
-
-setTimeout(storage.writeStore, 1000, 'calendar.g5s1');
+for(let i=0; i<config('groups.length'); i++) {
+	const group=config('groups.'+i);
+	let cal=new Calendar(group.calendar, group.name);
+	cal.update();
+	cal.on('update', function() {
+		store.writeStore('calendar.'+group.name, true);
+	});
+}
