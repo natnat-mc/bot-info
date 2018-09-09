@@ -12,7 +12,7 @@ shared.commands.edt=function(msg, args) {
 	else if(args[1]=='today') evts=cal.getForDay();
 	else if(args[1]=='tomorrow') evts=cal.getForDay(new Date(Date.now()+dates.oneDay));
 	else if(args[1]=='next') evts=cal.getForWeek(new Date(Date.now()+dates.oneWeek));
-	else if(args[1].match('[0-3]?[0-9]/[01]?[0-9]/?[0-9]*')) {
+	else if(/[0-3]?[0-9]\/[01]?[0-9]\/?[0-9]*/.test(args[1])) {
 		let parts=args[1].split('/');
 		let date=new Date();
 		if(parts[2]!==undefined) date.setFullYear(parts[2]);
