@@ -1,0 +1,36 @@
+{
+	"bot": {
+		"token": "<YOUR BOT TOKEN HERE>",
+		"prefix": "?",
+		"owner": "<YOUR USER ID HERE>",
+		"debug": false
+	},
+	"region": {
+		"locale": "fr-FR",
+		"timezone": "Europe/Paris",
+		"UTCOffset": 2
+	},
+	"store": {
+		"directSaveThreshold": 5,
+		"saveInterval": 5000,
+		"forceSaveInterval": 60000
+	},
+	"calendar": {
+		"updateInterval": 3600000
+	},
+	"reminders": {
+		"precision": 5000
+	},
+	"brainfuck": {
+		"length": 1024,
+		"max": 65536
+	},
+	"groups": [
+		{
+			"name": "<name of the group>",
+			"channel": "<channel where to push notifications>",
+			"role": "<role to ping>",
+			"calendar": "<calendar URL>"
+		}
+	]
+}
