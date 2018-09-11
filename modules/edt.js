@@ -5,8 +5,12 @@ shared.commands.edt=function(msg, args) {
 	if(args.length!=2) {
 		return msg.reply("**ERROR**: wrong command format");
 	}
+
+	// find calendar
 	let cal=shared.calendars[args[0].toLowerCase()];
 	if(!cal) return msg.reply("Ce calendrier n\'existe pas");
+
+	// read the calendar
 	let evts;
 	if(args[1]==='' || args===undefined || args[1]=='week') evts=cal.getForWeek();
 	else if(args[1]=='today') evts=cal.getForDay();
@@ -22,15 +26,46 @@ shared.commands.edt=function(msg, args) {
 	} else {
 		return msg.reply("**ERROR**: wrong date format");
 	}
+
+	// check for empty days/weeks
+	if(!evts.length) {
+		return msg.reply('**PAS DE COURS SUR CETTE PERIODE**');
+	}
+
+	// create the RichEmbed
 	let embed=new Discord.RichEmbed();
 	embed.setTitle("Emploi du temps");
 	embed.setURL("http://edt.univ-lyon1.fr");
 	embed.setTimestamp(new Date());
-	evts.forEach(function(evt) {
-		let info=dates.datesToRange(evt.start, evt.end);
-		info+=' @ '+evt.loc;
-		embed.addField(evt.name, info);
+
+	// sort them by day
+	let byDay=[];
+	let lastDay;
+	evts.forEach(evt => {
+		let parts=dates.dateToParts(evt.start);
+		let day=parts.day+'/'+parts.month+'/'parts.year:
+		if(day!=lastDay) {
+			lastDay=day;
+			byDay.push({
+				day: day,
+				evts: [evt]
+			});
+		} else {
+			byDay[byDay.length-1].evts.push(evt);
+		}
 	});
+
+	// populate the RichEmbed
+	byDay.forEach(day => {
+		embed.addField(day.day, day.evts.map(evt => {
+			let str='';
+			let partsSt=dates.dateToParts(evt.start);
+			let partsEd=dates.dateToParts(evt.end);
+			str+=partsSt.hour+':'+partsSt.minute+' -> '+partsEd.hour+':'+partsEd.minute+'\t';
+			str+='**'+evt.name+'** en '+evt.loc;
+		}).join('\n'));
+	});
+
 	return msg.reply(embed);
 };
 
