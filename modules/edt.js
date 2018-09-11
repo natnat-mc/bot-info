@@ -43,7 +43,7 @@ shared.commands.edt=function(msg, args) {
 	let lastDay;
 	evts.forEach(evt => {
 		let parts=dates.dateToParts(evt.start);
-		let day=parts.day+'/'+parts.month+'/'parts.year:
+		let day=parts.day+'/'+parts.month+'/'+parts.year:
 		if(day!=lastDay) {
 			lastDay=day;
 			byDay.push({
