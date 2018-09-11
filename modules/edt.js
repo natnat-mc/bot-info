@@ -63,6 +63,7 @@ shared.commands.edt=function(msg, args) {
 			let partsEd=dates.dateToParts(evt.end);
 			str+=partsSt.hour+':'+partsSt.minute+' -> '+partsEd.hour+':'+partsEd.minute+'\t';
 			str+='**'+evt.name+'** en '+evt.loc;
+			return str;
 		}).join('\n'));
 	});
 
