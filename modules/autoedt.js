@@ -1,29 +1,29 @@
+const cron=require('./api/cron');
+const dates=require('./api/dates');
+
 module.type='service';
-module.desc="Affiche automatiquement les EDT toutes les semaines, et affche les modifications en @mention les personnes concernées";
+module.desc="Affiche automatiquement les EDT toutes les semaines";
 
-const cleanup=[];
-
-for(let i=0; i<config('groups.length'); i++) {
-	const group=config('groups.'+i);
-	const calendar=shared.calendars[group.name];
-	
-	const calendarChanged=function(diff) {
-		console.log('calendar has changed', group.name, diff);
-	};
-	const calendarUpdated=function() {
-		console.log('calendar has updated', group.name);
-	};
-	
-	calendar.on('changed', calendarChanged);
-	calendar.on('updated', calendarUpdated);
-	
-	cleanup.push(function() {
-		calendar.removeListener('changed', calendarChanged);
-		calendar.removeListener('updated', calendarUpdated);
-	});
+function printEdt(week) {
+	loader.require('edt').then(edt => {
+		for(let i=0; i<config('groups.length'); i++) {
+			const group=config('groups.'+i);
+			const calendar=shared.calendars[group.name];
+			const channel=shared.bot.channels.get(group.channel);
+			const events=week?calendar.getForWeek():calendar.getForDay(new Date(Date.now()+dates.oneDay));
+			const embed=edt.createEmbed(events);
+			channel.send(embed).catch(err => console.error(err));
+		}
+	}).catch(err => console.error(err));
 }
 
+const eachWeek=cron('0	9	0	*	0', printEdt.bind(null, true));
+const eachDay=cron('0	18	1-5	*	0', printEdt.bind(null, false));
+
 module.unload=function() {
-	cleanup.forEach(a => a());
-	console.log('unloaded autoedt module and removed listeners');
+	cron.remove(eachDay);
+	cron.remove(eachWeek);
+	console.log('unloaded autoedt module and removed crontab entries');
 };
+
+exports.printEdt=printEdt;

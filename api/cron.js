@@ -1,17 +1,39 @@
 const dates=require('./dates');
 
-const crontab=[];
+let crontab=[];
+let lastID=0;
 
 const reg={
 	modulo: /^\*\/([0-9]+)$/,
 	fixed: /^([0-9]+)$/,
-	multiple: /^[0-9]+(,[0-9]+)+$/
+	multiple: /^[0-9]+(,[0-9]+)+$/,
+	range: /^([0-9]+)-([0-9]+)$/,
+	rangemod: /^([0-9]+)-([0-9]+)\/([0-9]+)$/
 };
 
 function parseTime(val) {
 	if(val=='*') {
 		return {
 			type: 'all'
+		};
+	} else if(reg.rangemod.test(val)) {
+		let [_, min, max, mod]=reg.rangemod.exec(val);
+		return {
+			type: 'rangemod',
+			value: {
+				min: +min,
+				max: +max,
+				mod: +mod
+			}
+		};
+	} else if(reg.range.test(val)) {
+		let [_, min, max]=reg.range.exec(val);
+		return {
+			type: 'range',
+			value: {
+				min: +min,
+				max: +max
+			}
 		};
 	} else if(reg.modulo.test(val)) {
 		return {
@@ -41,8 +63,12 @@ function matchPart(date, entry, name) {
 			return true;
 		case 'fixed':
 			return part==check.value;
+		case 'range':
+			return part>=check.value.min && part<=check.value.max;
 		case 'modulo':
 			return (part%check.value)==0;
+		case 'rangemod':
+			part>=check.value.min && part<=check.value.max && part%check.value.mod==0;
 		case 'multiple':
 			return check.value.some(a => a==part);
 		default:
@@ -51,10 +77,8 @@ function matchPart(date, entry, name) {
 }
 
 function matchDate(date, entry) {
-	if(!matchPart(date, entry, 'year')) return false;
 	if(!matchPart(date, entry, 'month')) return false;
-	if(!matchPart(date, entry, 'day')) return false;
-	if(!matchPart(date, entry, 'dayOfWeek')) return false;
+	if(!(matchPart(date, entry, 'day') || matchPart(date, entry, 'dayOfWeek'))) return false;
 	if(!matchPart(date, entry, 'hour')) return false;
 	return matchPart(date, entry, 'minute');
 }
@@ -65,26 +89,27 @@ function add(time, fn) {
 	timeObj.minute=parseTime(parts[0]);
 	timeObj.hour=parseTime(parts[1]);
 	timeObj.dayOfWeek=parseTime(parts[2]);
-	timeObj.day=parseTime(parts[3]);
-	timeObj.month=parseTime(parts[4]);
-	timeObj.year=parseTime(parts[5]);
+	timeObj.month=parseTime(parts[3]);
+	timeObj.day=parseTime(parts[4]);
 	timeObj.fn=fn;
-	console.log(timeObj);
+	timeObj.id=lastID++;
 	crontab.push(timeObj);
+	return timeObj.id;
+}
+
+function remove(id) {
+	let oldLen=crontab.length;
+	crontab=crontab.filter(evt => evt.id!=id);
+	return oldLen-crontab.length;
 }
 
 setInterval(function() {
 	let date=dates.dateToParts(new Date());
-	console.log('date is', date);
 	crontab.forEach(entry => {
-		console.log('matching', entry.minute);
 		if(matchDate(date, entry)) entry.fn();
 	});
 }, dates.oneMin);
 
 module.exports=exports=add;
-
-add('*/2	*	*	*	*	*	*', () => console.log('ok'));
-add('*		*	*	*	*	*	*', () => console.log('ok2'));
-add('57		*	*	*	*	*	*', () => console.log('ok3'));
-add('57,58	*	*	*	*	*	*', () => console.log('ok4'));
+exports.add=add;
+exports.remove=remove;

@@ -1,6 +1,19 @@
 const Discord=require('discord.js');
 const dates=require('./dates');
 
+function createEmbed(evts) {
+	let embed=new Discord.RichEmbed();
+	embed.setTitle("Emploi du temps");
+	embed.setURL("http://edt.univ-lyon1.fr");
+	embed.setTimestamp(new Date());
+	evts.forEach(function(evt) {
+		let info=dates.datesToRange(evt.start, evt.end);
+		info+=' @ '+evt.loc;
+		embed.addField(evt.name, info);
+	});
+	return embed;
+}
+
 shared.commands.edt=function(msg, args) {
 	if(args.length!=2) {
 		return msg.reply("**ERROR**: wrong command format");
@@ -22,16 +35,7 @@ shared.commands.edt=function(msg, args) {
 	} else {
 		return msg.reply("**ERROR**: wrong date format");
 	}
-	let embed=new Discord.RichEmbed();
-	embed.setTitle("Emploi du temps");
-	embed.setURL("http://edt.univ-lyon1.fr");
-	embed.setTimestamp(new Date());
-	evts.forEach(function(evt) {
-		let info=dates.datesToRange(evt.start, evt.end);
-		info+=' @ '+evt.loc;
-		embed.addField(evt.name, info);
-	});
-	return msg.reply(embed);
+	return msg.reply(createEmbed(evts));
 };
 
 shared.commands.edt.usage=[
@@ -55,3 +59,5 @@ shared.commands.edt.help={
 };
 
 module.type='command';
+
+exports.createEmbed=createEmbed;
