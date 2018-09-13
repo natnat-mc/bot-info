@@ -1,5 +1,5 @@
-const cron=require('./api/cron');
-const dates=require('./api/dates');
+const cron=require('./cron');
+const dates=require('./dates');
 
 module.type='service';
 module.desc="Affiche automatiquement les EDT toutes les semaines";
