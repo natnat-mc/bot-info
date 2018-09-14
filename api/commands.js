@@ -10,7 +10,7 @@ shared.commands=cmds;
 function commands(msg) {
 	let text=msg.content.slice(config('bot.prefix').length);
 	let args=text.split(/[\t ]+/g);
-	let cmd=args.shift();
+	let cmd=args.shift().toLowerCase();
 	console.log(cmd, args);
 	if(cmd=='ping') {
 		msg.reply('pong '+args.join(' '));
