@@ -18,7 +18,7 @@ function printEdt(week) {
 }
 
 const eachWeek=cron('0	9	0	*	0', printEdt.bind(null, true));
-const eachDay=cron('0	18	1-5	*	0', printEdt.bind(null, false));
+const eachDay=cron('0	18	1-4	*	0', printEdt.bind(null, false));
 
 module.unload=function() {
 	cron.remove(eachDay);
