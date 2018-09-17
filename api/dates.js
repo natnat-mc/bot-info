@@ -39,6 +39,7 @@ function dateToParts(date) {
 	let parts=dateReader.formatToParts(date);
 	let keys={};
 	for(i=0; i<parts.length; i++) keys[parts[i].type]=parts[i].value;
+	keys.dayOfWeek=new Date(keys.year, keys.month-1, keys.day).getDay();
 	return keys;
 }
 function datesToRange(a, b) {

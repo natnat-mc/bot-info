@@ -108,7 +108,7 @@ class Loader {
 				return self.load(name);
 			})).then(a => a.map(b => b.exports));
 		} else if(typeof names=='string') {
-			return self.load(name).then(a => a.exports);
+			return self.load(names).then(a => a.exports);
 		} else if(typeof names=='object') {
 			let list=[]
 			let prop=[];

@@ -16,9 +16,9 @@ function parseDate(str) {
 	}
 	let date;
 	if(str.endsWith('Z')) {
-		date=new Date(Date.UTC(time.year, time.month, time.day, time.hours, time.minutes, time.seconds));
+		date=new Date(Date.UTC(time.year, time.month, time.day, time.hours, time.minutes, time.seconds, 0));
 	} else {
-		date=new Date(time.year, time.month, time.day, time.hours, time.minutes, time.seconds);
+		date=new Date(time.year, time.month, time.day, time.hours, time.minutes, time.seconds, 0);
 	}
 	return date;
 }
@@ -31,7 +31,7 @@ class Event {
 		this.desc='[NO DESC]';
 		this.loc=null;
 	}
-
+	
 	get short() {
 		let time='NO DATE';
 		if(this.start&&this.end) {
@@ -43,6 +43,28 @@ class Event {
 		let short='['+time+'] '+this.name;
 		if(this.loc) short+=' @ '+this.loc;
 		return short;
+	}
+	
+	equals(other) {
+		if(other.constructor!=this.constructor) {
+			return false;
+		} else if(other.name!=this.name) {
+			return false;
+		} else if(other.desc!=this.desc) {
+			return false;
+		} else if(other.loc!=this.loc) {
+			return false;
+		} else if((!!other.start)!=(!!this.start)) {
+			return false;
+		} else if((!!other.end)!=(!!this.end)) {
+			return false;
+		} else if(this.start && this.start.getTime()!=other.start.getTime()) {
+			return false;
+		} else if(this.end && this.end.getTime()!=other.end.getTime()) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 }
 
@@ -56,8 +78,7 @@ class ICS {
 		while(lines[lineno]!='BEGIN:VEVENT') {
 			lineno++;
 		}
-
-
+		
 		const cal=new ICS();
 		let current=null;
 		for(; lineno<lines.length; lineno++) {
@@ -109,6 +130,50 @@ class ICS {
 			let time=a.start.getTime();
 			return time>=begin && time<=end;
 		});
+	}
+	
+	static findChanges(oldCal, newCal) {
+		let oldPos=0, newPos=0;
+		let removed=[], added=[], modified=[], unchanged=[];
+		let hasAdded=false, hasRemoved=false, hasModified=false;
+		do {
+			let oldEvt=oldCal.events[oldPos];
+			let newEvt=newCal.events[newPos];
+			if(oldEvt.equals(newEvt)) {
+				unchanged.push(newEvt);
+				oldPos++; newPos++;
+			} else if(oldEvt.start.getTime()==newEvt.start.getTime()) {
+				modified.push({
+					before: oldEvt,
+					after: newEvt
+				});
+				hasModified=true;
+				oldPos++; newPos++;
+			} else if(oldEvt.start.getTime()<newEvt.start.getTime()) {
+				removed.push(oldEvt);
+				hasRemoved=true;
+				oldPos++;
+			} else {
+				added.push(newEvt);
+				hasAdded=true;
+				newPos++;
+			}
+		} while(oldPos<oldCal.events.length && newPos<newCal.events.length);
+		for(; oldPos<oldCal.events.length; oldPos++) {
+			removed.push(oldCal.events[oldPos]);
+		}
+		for(; newPos<newCal.events.length; newPos++) {
+			added.push(newCal.events[newPos]);
+		}
+		return {
+			unchanged: unchanged,
+			modified: modified,
+			added: added,
+			removed: removed,
+			hasModified: hasModified,
+			hasAdded: hasAdded,
+			hasRemoved: hasRemoved
+		};
 	}
 }
 

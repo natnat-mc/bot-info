@@ -1,38 +1,8 @@
 const Discord=require('discord.js');
 const dates=require('./dates');
 
-shared.commands.edt=function(msg, args) {
-	if(args.length!=2) {
-		return msg.reply("**ERROR**: wrong command format");
-	}
-
-	// find calendar
-	let cal=shared.calendars[args[0].toLowerCase()];
-	if(!cal) return msg.reply("Ce calendrier n\'existe pas");
-
-	// read the calendar
-	let evts;
-	if(args[1]==='' || args===undefined || args[1]=='week') evts=cal.getForWeek();
-	else if(args[1]=='today') evts=cal.getForDay();
-	else if(args[1]=='tomorrow') evts=cal.getForDay(new Date(Date.now()+dates.oneDay));
-	else if(args[1]=='next') evts=cal.getForWeek(new Date(Date.now()+dates.oneWeek));
-	else if(/[0-3]?[0-9]\/[01]?[0-9]\/?[0-9]*/.test(args[1])) {
-		let parts=args[1].split('/');
-		let date=new Date();
-		if(parts[2]!==undefined) date.setFullYear(parts[2]);
-		date.setMonth(parts[1]-1);
-		date.setDate(parts[0]);
-		evts=cal.getForDay(date);
-	} else {
-		return msg.reply("**ERROR**: wrong date format");
-	}
-
-	// check for empty days/weeks
-	if(!evts.length) {
-		return msg.reply('**PAS DE COURS SUR CETTE PERIODE**');
-	}
-
-	// create the RichEmbed
+function createEmbed(evts) {
+// create the RichEmbed
 	let embed=new Discord.RichEmbed();
 	embed.setTitle("Emploi du temps");
 	embed.setURL("http://edt.univ-lyon1.fr");
@@ -66,8 +36,40 @@ shared.commands.edt=function(msg, args) {
 			return str;
 		}).join('\n'));
 	});
+  
+  return embed;
+}
 
-	return msg.reply(embed);
+shared.commands.edt=function(msg, args) {
+	if(args.length!=2) {
+		return msg.reply("**ERROR**: wrong command format");
+	}
+
+	// find calendar
+	let cal=shared.calendars[args[0].toLowerCase()];
+	if(!cal) return msg.reply("Ce calendrier n\'existe pas");
+
+	// read the calendar
+	let evts;
+	if(args[1]==='' || args===undefined || args[1]=='week') evts=cal.getForWeek();
+	else if(args[1]=='today') evts=cal.getForDay();
+	else if(args[1]=='tomorrow') evts=cal.getForDay(new Date(Date.now()+dates.oneDay));
+	else if(args[1]=='next') evts=cal.getForWeek(new Date(Date.now()+dates.oneWeek));
+	else if(/[0-3]?[0-9]\/[01]?[0-9]\/?[0-9]*/.test(args[1])) {
+		let parts=args[1].split('/');
+		let date=new Date();
+		if(parts[2]!==undefined) date.setFullYear(parts[2]);
+		date.setMonth(parts[1]-1);
+		date.setDate(parts[0]);
+		evts=cal.getForDay(date);
+	} else {
+		return msg.reply("**ERROR**: wrong date format");
+	}
+	// check for empty days/weeks
+	if(!evts.length) {
+		return msg.reply('**PAS DE COURS SUR CETTE PERIODE**');
+	}
+	return msg.reply(createEmbed(evts));
 };
 
 shared.commands.edt.usage=[
@@ -91,3 +93,5 @@ shared.commands.edt.help={
 };
 
 module.type='command';
+
+exports.createEmbed=createEmbed;
