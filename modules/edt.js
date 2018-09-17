@@ -36,8 +36,8 @@ function createEmbed(evts) {
 			return str;
 		}).join('\n'));
 	});
-  
-  return embed;
+
+	return embed;
 }
 
 shared.commands.edt=function(msg, args) {
@@ -65,10 +65,13 @@ shared.commands.edt=function(msg, args) {
 	} else {
 		return msg.reply("**ERROR**: wrong date format");
 	}
+
 	// check for empty days/weeks
 	if(!evts.length) {
 		return msg.reply('**PAS DE COURS SUR CETTE PERIODE**');
 	}
+
+	// send the embed if available
 	return msg.reply(createEmbed(evts));
 };
 
