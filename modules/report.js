@@ -22,7 +22,7 @@ function awaitReport(user, channel, reason) {
 	// make sure we don't wait too long
 	const timer=new Promise((resolve, reject) => {
 		setTimeout(() => {
-			reject.bind(null, "timed out");
+			reject("timed out");
 			shared.bot.removeListener('messageReactionAdd', findMessage);
 		}, config('report.timeout'));
 	});
