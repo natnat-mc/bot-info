@@ -113,7 +113,7 @@ shared.commands.report.usage=[
 	{
 		name: 'mention | messageID | "reaction"',
 		required: true,
-		desc: "L'utilisateur ou message à rapporter"
+		desc: "L'utilisateur ou message à rapporter. Le mode `reaction` permet de signaler le message à l'aide de la réaction "+config('report.reaction')
 	}, {
 		name: 'reason',
 		required: false,
