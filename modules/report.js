@@ -2,7 +2,7 @@ const {getMention}=require('./discord');
 const {dateToTime}=require('./dates');
 
 const idReg=/^([0-9]+)$/;
-const userReg=/^<@([0-9]+)>$/;
+const userReg=/^<@!([0-9]+)>$/;
 
 function report(msg, user) {
 	// read the config

@@ -1,7 +1,7 @@
 function getMention(id, kind) {
 	switch(kind || 'user') {
 		case 'user':
-			return '<@'+id+'>';
+			return '<@!'+id+'>';
 		case 'role':
 			return '<@&'+id+'>';
 		case 'channel':
