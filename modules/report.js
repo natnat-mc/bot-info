@@ -43,7 +43,7 @@ shared.commands.report=(msg, args) => {
 	if(id) id=id[1];
 	let user=userReg.exec(args[0]);
 	if(user) user=user[1];
-	if(!(id || prev || user)) return msg.reply("**ERROR**: invalid message spec");
+	if(!(id || user)) return msg.reply("**ERROR**: invalid message spec");
 	const reason=args[1] || "No reason given";
 	
 	// pin the message and react
