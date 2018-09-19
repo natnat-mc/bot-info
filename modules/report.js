@@ -8,7 +8,7 @@ function report(msg, user) {
 	// read the config
 	const reportChan=msg.guild.channels.get(config('report.channel'));
 	const mentions=config('report.mentions').map(mention => {
-		if(typeof(mention)=='string')) return '<@&'+mention+'>';
+		if(typeof(mention)=='string') return '<@&'+mention+'>';
 		else if(mention.type=='raw') return mention.value;
 		else if(mention.type=='user') return '<@'+mention.value+'>';
 		else if(mention.type=='group') return '<@&'+mention.value+'>';
