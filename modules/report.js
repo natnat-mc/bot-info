@@ -63,4 +63,23 @@ shared.commands.report=(msg, args) => {
 	}
 };
 
+shared.commands.report.help={
+	name: 'report',
+	desc: "Quand quelqu'un va trop loin. Tout abus sera puni.",
+	admin: false,
+	category: 'moderation'
+};
+
+shared.commands.report.usage=[
+	{
+		name: 'mention | messageID',
+		required: true,
+		desc: "L'utilisateur ou message à rapporter"
+	}, {
+		name: 'reason',
+		required: false,
+		desc: "La raison du report"
+	}
+];
+
 module.type='command';
