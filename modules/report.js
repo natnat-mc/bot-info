@@ -4,6 +4,31 @@ const {dateToTime}=require('./dates');
 const idReg=/^([0-9]+)$/;
 const userReg=/^<@!([0-9]+)>$/;
 
+function awaitReport(user, channel, reason) {
+	let ok, find;
+	function findMessage(reaction) {
+		if(reaction.emoji.name==config('report.reaction') && reaction.message.channel.id==channel.id && reaction.users.get(user.id)) {
+			ok(reaction.message);
+		} else {
+			shared.bot.once('messageReactionAdd', find);
+		}
+	}
+	find=findMessage;
+	
+	const reaction=new Promise((resolve, reject) => {
+		ok=resolve;
+		shared.bot.once('messageReactionAdd', find);
+	});
+	// make sure we don't wait too long
+	const timer=new Promise((resolve, reject) => {
+		setTimeout(() => {
+			reject.bind(null, "timed out");
+			shared.bot.removeListener('messageReactionAdd', findMessage);
+		}, config('report.timeout'));
+	});
+	return Promise.race([timer, reaction]);
+}
+
 function report(msg, user, reason) {
 	// read the config
 	const reportChan=msg.guild.channels.get(config('report.channel'));
@@ -45,7 +70,7 @@ shared.commands.report=(msg, args) => {
 	if(id) id=id[1];
 	let user=userReg.exec(arg0);
 	if(user) user=user[1];
-	if(!(id || user)) return msg.reply("**ERROR**: invalid message spec");
+	if(!(id || user || arg0=='reaction')) return msg.reply("**ERROR**: invalid message spec");
 	let reason=args.join(' ');
 	if(!reason) reason="No reason given";
 	
@@ -60,6 +85,17 @@ shared.commands.report=(msg, args) => {
 		}).catch(err => {
 			return msg.reply("**ERROR**: invalid ID");
 		});
+	} else if(arg0=='reason') {
+		return awaitReport(msg.author, msg.channel, reason).then(reported => {
+			return report(reported, msg.author, reason);
+		}).catch(err => {
+			if(err=="timed out") {
+				return msg.reply("**ERROR**: timed out");
+			} else {
+				console.error(err);
+				return msg.reply("**ERROR**: failed to locate message");
+			}
+		});
 	}
 };
 
@@ -72,7 +108,7 @@ shared.commands.report.help={
 
 shared.commands.report.usage=[
 	{
-		name: 'mention | messageID',
+		name: 'mention | messageID | "reaction"',
 		required: true,
 		desc: "L'utilisateur ou message à rapporter"
 	}, {
