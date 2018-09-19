@@ -49,11 +49,11 @@ shared.commands.report=(msg, args) => {
 	// pin the message and react
 	if(user) {
 		// only a user was given, report the reporting message itself
-		return report(msg, msg.user);
+		return report(msg, msg.author);
 	} else if(id) {
 		// report a message by its id
 		return msg.channel.fetchMessage(id).then(reported => {
-			return report(reported, msg.user);
+			return report(reported, msg.author);
 		}).catch(err => {
 			return msg.reply("**ERROR**: invalid ID");
 		});
