@@ -8,11 +8,13 @@ function awaitReport(user, channel, reason) {
 	let ok, find;
 	function findMessage(reaction) {
 		console.log(reaction);
-		if(reaction.emoji.name==config('report.reaction') && reaction.message.channel.id==channel.id && reaction.users.get(user.id)) {
-			ok(reaction.message);
-		} else {
-			shared.bot.once('messageReactionAdd', find);
+		if(reaction.emoji.name==config('report.reaction')) {
+			console.log('found reaction');
+			if(reaction.message.channel.id==channel.id && reaction.users.get(user.id)) {
+				return ok(reaction.message);
+			}
 		}
+		shared.bot.once('messageReactionAdd', find);
 	}
 	find=findMessage;
 	
