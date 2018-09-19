@@ -39,12 +39,14 @@ function report(msg, user) {
 shared.commands.report=(msg, args) => {
 	// read the arguments
 	if(!args.length) return msg.reply("**ERROR**: invalid command format");
-	let id=idReg.exec(args[0]);
+	let arg0=args.shift();
+	let id=idReg.exec(arg0);
 	if(id) id=id[1];
-	let user=userReg.exec(args[0]);
+	let user=userReg.exec(arg0);
 	if(user) user=user[1];
 	if(!(id || user)) return msg.reply("**ERROR**: invalid message spec");
-	const reason=args[1] || "No reason given";
+	let reason=args.join(' ');
+	if(!reason) reason="No reason given";
 	
 	// pin the message and react
 	if(user) {
