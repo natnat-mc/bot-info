@@ -7,6 +7,7 @@ const userReg=/^<@!([0-9]+)>$/;
 function awaitReport(user, channel, reason) {
 	let ok, find;
 	function findMessage(reaction) {
+		console.log(reaction.emoji.name);
 		if(reaction.emoji.name==config('report.reaction')) {
 			console.log('found reaction');
 			if(reaction.message.channel.id==channel.id && reaction.users.get(user.id)) {
