@@ -11,7 +11,7 @@ function report(msg, user, reason) {
 		if(typeof(mention)=='string') return '<@&'+mention+'>';
 		else if(mention.type=='raw') return mention.value;
 		else if(mention.type=='user') return '<@'+mention.value+'>';
-		else if(mention.type=='group') return '<@&'+mention.value+'>';
+		else if(mention.type=='role') return '<@&'+mention.value+'>';
 		else return '';
 	}).join(', ');
 	
