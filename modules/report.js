@@ -4,7 +4,7 @@ const {dateToTime}=require('./dates');
 const idReg=/^([0-9]+)$/;
 const userReg=/^<@!([0-9]+)>$/;
 
-function report(msg, user) {
+function report(msg, user, reason) {
 	// read the config
 	const reportChan=msg.guild.channels.get(config('report.channel'));
 	const mentions=config('report.mentions').map(mention => {
@@ -24,7 +24,8 @@ function report(msg, user) {
 	}).then(txt => {
 		let message="**Attention** "+mentions+":\n";
 		message+=getMention(user.id)+" reported "+txt+"\n";
-		message+="at *"+dateToTime(new Date())+"*";
+		message+="at *"+dateToTime(new Date())+"*\n";
+		message+="reason: "+reason;
 		return reportChan.send(message);
 	}).then(() => {
 		return msg.channel.send("L'incident a été rapporté. Tout abus sera puni.");
@@ -51,11 +52,11 @@ shared.commands.report=(msg, args) => {
 	// pin the message and react
 	if(user) {
 		// only a user was given, report the reporting message itself
-		return report(msg, msg.author);
+		return report(msg, msg.author, reason);
 	} else if(id) {
 		// report a message by its id
 		return msg.channel.fetchMessage(id).then(reported => {
-			return report(reported, msg.author);
+			return report(reported, msg.author, reason);
 		}).catch(err => {
 			return msg.reply("**ERROR**: invalid ID");
 		});
