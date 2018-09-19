@@ -7,7 +7,6 @@ const userReg=/^<@!([0-9]+)>$/;
 function awaitReport(user, channel, reason) {
 	let ok, find;
 	function findMessage(reaction) {
-		console.log(reaction);
 		if(reaction.emoji.name==config('report.reaction')) {
 			console.log('found reaction');
 			if(reaction.message.channel.id==channel.id && reaction.users.get(user.id)) {
@@ -26,7 +25,7 @@ function awaitReport(user, channel, reason) {
 	const timer=new Promise((resolve, reject) => {
 		setTimeout(() => {
 			reject("timed out");
-			shared.bot.removeListener('messageReactionAdd', findMessage);
+			shared.bot.removeListener('messageReactionAdd', find);
 		}, config('report.timeout'));
 	});
 	return Promise.race([timer, reaction]);
@@ -88,7 +87,7 @@ shared.commands.report=(msg, args) => {
 		}).catch(err => {
 			return msg.reply("**ERROR**: invalid ID");
 		});
-	} else if(arg0=='reason') {
+	} else if(arg0=='reaction') {
 		return awaitReport(msg.author, msg.channel, reason).then(reported => {
 			return report(reported, msg.author, reason);
 		}).catch(err => {
