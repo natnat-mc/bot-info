@@ -63,10 +63,8 @@ function parse(str) {
 	let quote=null;
 	let escaped=false;
 	let current='';
-	console.log(cmd, rawArgs);
 	for(let i=0; i<rawArgs.length; i++) {
 		let char=rawArgs[i];
-		console.log('\''+char+'\'', i);
 		if(escaped) {
 			// handle escape sequences
 			switch(char) {
