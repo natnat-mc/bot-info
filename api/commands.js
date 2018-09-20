@@ -10,8 +10,9 @@ shared.commands=cmds;
 const reg=/^([^ ]+) (.+)$/m;
 
 function commands(msg) {
-	const text=msg.content.slice(config('bot.prefix').length);
-	const {cmd, args}=parse(text);
+	const parsed=parse(msg.content);
+	if(!parsed) return;
+	const {cmd, args}=parsed;
 	console.log(cmd, args);
 	if(cmd=='ping') {
 		msg.reply('pong '+args.join(' '));
