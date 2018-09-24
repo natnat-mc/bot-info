@@ -1,0 +1,26 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+header {
+	background: #ddddff;
+	border-bottom: 1px solid #aaaaff;
+}
+
+section#global {
+	display: flex;
+}
+
+section#main {
+	background: #aaaaff;
+}
+
+nav#globalNav {
+	background: #9999ff;
+}
+
+footer {
+	background: #ddddff;
+	border-top: 1px solid #aaaaff;
+}

@@ -1,0 +1,13 @@
+<%- include('template-top.ejs') _%>
+
+<h1>TEST</h1>
+<p>Bot owner: <%= config('bot.owner') %></p>
+<p>Nombre de commandes: <%= Object.keys(shared.commands).length %></p>
+<p>Commandes:</p>
+<ul>
+	<% Object.keys(shared.commands).forEach(name => { _%>
+	<li><%= name %></li>
+	<% }); _%>
+</ul>
+
+<%- include('template-bot.ejs')_%>

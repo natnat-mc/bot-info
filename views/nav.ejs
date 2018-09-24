@@ -1,0 +1,9 @@
+<ul>
+<% for(let [text, url] of [
+	["Page d'accueil", '/'],
+	["EDT", '/edt'],
+	["Panneau de contrôle", '/control']
+]) { _%>
+<li><a href="<%- url %>"><%= text %></a></li>
+<% } _%>
+</ul>
