@@ -106,3 +106,7 @@ store.ensureStore('reminders').then(function() {
 });
 
 module.type='command';
+module.unload=() => {
+	delete shared.commands.remind;
+	store.writeStore('reminders').catch(console.error);
+};

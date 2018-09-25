@@ -93,3 +93,6 @@ shared.commands.brainfuck.help={
 };
 
 module.type='command';
+module.unload=() => {
+	delete shared.commands.brainfuck;
+};

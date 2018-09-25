@@ -40,3 +40,6 @@ shared.commands.usage.help={
 };
 
 module.type='command';
+module.unload=() => {
+	delete shared.commands.usage;
+};

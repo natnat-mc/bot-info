@@ -96,5 +96,8 @@ shared.commands.edt.help={
 };
 
 module.type='command';
+module.unload=() => {
+	delete shared.commands.edt;
+};
 
 exports.createEmbed=createEmbed;
