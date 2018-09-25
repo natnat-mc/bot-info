@@ -5,22 +5,47 @@
 
 header {
 	background: #ddddff;
-	border-bottom: 1px solid #aaaaff;
+	border-bottom: 1px solid #7777ff;
 }
 
-section#global {
+#global {
 	display: flex;
 }
 
-section#main {
+#main {
 	background: #aaaaff;
+	flex: 4;
 }
 
-nav#globalNav {
+#globalNav {
 	background: #9999ff;
+	flex: 1;
+	border-right: 1px solid #7777ff;
 }
 
 footer {
 	background: #ddddff;
-	border-top: 1px solid #aaaaff;
+	border-top: 1px solid #7777ff;
+}
+
+ul {
+	list-style-type: none;
+}
+
+li+li {
+	border-top: 1px solid;
+}
+li:hover {
+	background: #ddddff;
+}
+
+@media (max-width: 600px) {
+	#global {
+		flex-direction: column;
+	}
+	
+	#globalNav {
+		border-right: 0;
+		border-bottom: 1px solid #7777ff;
+	}
 }

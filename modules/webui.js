@@ -22,6 +22,19 @@ let server=app.listen(config('webui.internalPort'), () => {
 // unload it with the module
 module.unload=() => {
 	server.close();
+	delete shared.commands.webui;
+};
+
+// register the command
+shared.commands.webui=(args, msg) => {
+	msg.reply("**WebUI** available at "+config('webui.externalAddr'));
+};
+shared.commands.webui.usage=[];
+shared.commands.webui.help={
+	name: 'webui',
+	desc: "Donne le lien vers l'interface Web",
+	category: 'util',
+	admin: false
 };
 
 // function to automatically add a view with some context
