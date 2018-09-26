@@ -5,6 +5,7 @@ shared.commands.remind=function(msg, args) {
 	msg.reply("**ERROR**: Reminder module is still loading, it will be ready in a few seconds");
 };
 
+let intervalHandler;
 store.ensureStore('reminders').then(function() {
 	shared.commands.remind=function(msg, args) {
 		let time=args.shift();
@@ -64,7 +65,7 @@ store.ensureStore('reminders').then(function() {
 		category: 'util'
 	};
 	
-	setInterval(function() {
+	intervalHandler=setInterval(function() {
 		store.get('reminders').then(function(reminders) {
 			for(let chanId in reminders) {
 				if(reminders.hasOwnProperty(chanId)) {
@@ -109,4 +110,5 @@ module.type='command';
 module.unload=() => {
 	delete shared.commands.remind;
 	store.writeStore('reminders').catch(console.error);
+	if(intervalHandler!===undefined) clearInterval(intervalHandler);
 };
