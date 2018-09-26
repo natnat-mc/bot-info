@@ -110,5 +110,5 @@ module.type='command';
 module.unload=() => {
 	delete shared.commands.remind;
 	store.writeStore('reminders').catch(console.error);
-	if(intervalHandler!===undefined) clearInterval(intervalHandler);
+	if(intervalHandler!==undefined) clearInterval(intervalHandler);
 };
