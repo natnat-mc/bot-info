@@ -11,15 +11,13 @@ const store=require('./storage');
 // create an Express.js web server and configure it
 const app=express();
 expressWs(app);
-const router=express.Router();
-app.engine('html', require('ejs').renderFile);
-app.use(express.static('static'));
 app.use(express.json());
 app.use(express.urlencoded());
-
-// treat "/" and "/bot-info" as one
+app.engine('html', require('ejs').renderFile);
+const router=express.Router();
 app.use(router);
 app.use('/bot-info', router);
+router.use(express.static('static'));
 
 // make it listen on the configured port
 let server=app.listen(config('webui.internalPort'), () => {
