@@ -21,3 +21,6 @@ shared.commands.reload.help={
 };
 
 module.type='command';
+module.unload=() => {
+	delete shared.commands.reload;
+};

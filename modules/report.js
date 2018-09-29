@@ -122,3 +122,6 @@ shared.commands.report.usage=[
 ];
 
 module.type='command';
+module.unload=() => {
+	delete shared.commands.report;
+};

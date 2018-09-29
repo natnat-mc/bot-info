@@ -55,3 +55,6 @@ shared.commands.help.help={
 };
 
 module.type='command';
+module.unload=() => {
+	delete shared.commands.help;
+};
