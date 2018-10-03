@@ -71,7 +71,7 @@ store.ensureStore('reminders').then(function() {
 		const now=Date.now();
 		store.get('reminders').then(channels => {
 			return [channels, Object.keys(channels)];
-		}).then([channels, keys] => {
+		}).then(([channels, keys]) => {
 			return Promise.all(keys.map(chanID => {
 				let reminders=channels[chanID];
 				let channel=shared.bot.channels.get(chanID);
