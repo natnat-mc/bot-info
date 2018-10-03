@@ -76,7 +76,7 @@ store.ensureStore('reminders').then(function() {
 				let reminders=channels[chanID];
 				let channel=shared.bot.channels.get(chanID);
 				if(!reminders.length) {
-					delete channels[key];
+					delete channels[chanID];
 					return store.writeStore('reminders');
 				}
 				let triggered=reminders.filter(reminder => {
