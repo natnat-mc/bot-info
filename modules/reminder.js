@@ -99,9 +99,9 @@ store.ensureStore('reminders').then(function() {
 					return store.set('reminders', chanID, reminders);
 				}
 				return Promise.resolve(true);
-			}).catch(err => {
-				console.error(err);
 			});
+		}).catch(err => {
+			console.error(err);
 		});
 	});
 		console.log('reminder command loaded');
