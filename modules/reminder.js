@@ -1,11 +1,13 @@
 const dates=require('./dates');
 const store=require('./storage');
+const cron=require('./cron');
+const discord=require('./discord');
 
 shared.commands.remind=function(msg, args) {
 	msg.reply("**ERROR**: Reminder module is still loading, it will be ready in a few seconds");
 };
 
-let intervalHandler;
+let tabID;
 store.ensureStore('reminders').then(function() {
 	shared.commands.remind=function(msg, args) {
 		let time=args.shift();
@@ -34,8 +36,8 @@ store.ensureStore('reminders').then(function() {
 		}).then(function(len) {
 			store.set('reminders', msg.channel.id+'.'+len, {
 				timestamp: date.getTime(),
-					  message: txt,
-			 user: msg.author.id
+				message: txt,
+				user: msg.author.id
 			});
 		}).catch(function() {
 			msg.reply('**ERROR**: couldn\'t set reminder');
@@ -65,43 +67,44 @@ store.ensureStore('reminders').then(function() {
 		category: 'util'
 	};
 	
-	intervalHandler=setInterval(function() {
-		store.get('reminders').then(function(reminders) {
-			for(let chanId in reminders) {
-				if(reminders.hasOwnProperty(chanId)) {
-					store.get('reminders', chanId).then(function(reminders) {
-						let remaining=[];
-						reminders.forEach(function(reminder) {
-							if(reminder.timestamp<=Date.now()) {
-								let channel=shared.bot.channels.get(chanId);
-								shared.bot.fetchUser(reminder.user).then(function(user) {
-									let mention=user.toString();
-									let msg=mention+", un rappel est arrivé à expiration:\n"+reminder.message;
-									return channel.send(msg);
-								}).catch(function(e) {
-									console.error(e);
-								});
-							} else {
-								remaining.push(reminder);
-							}
-						});
-						if(remaining.length!=reminders.length) {
-							store.set('reminders', chanId, remaining).catch(function(e) {
-								console.error(e);
-							}).then(function() {
-								console.log(reminders.length-remaining.length, 'reminders have been triggered');
-							});
-						}
-					}).catch(function(e) {
-						console.error(e);
-					});
+	tabID=cron.add(config('reminders.crontab'), () => {
+		const now=Date.now();
+		store.get('reminders').then(channels => {
+			return [channels, Object.keys(channels)];
+		}).then([channels, keys] => {
+			return Promise.all(keys.map(chanID => {
+				let reminders=channels[chanID];
+				let channel=shared.bot.channels.get(chanID);
+				if(!reminders.length) {
+					delete channels[key];
+					return store.writeStore('reminders');
 				}
-			}
-		}).catch(function(e) {
-			console.error(e);
+				let triggered=reminders.filter(reminder => {
+					return reminder.timestamp<=now;
+				});
+				let promises=triggered.map(reminder => {
+					let msg=discord.getMention(reminder.user)+', you have a new reminder:\n';
+					msg+=reminder.message;
+					return channel.send(msg);
+				});
+				Promise.all(promises).then(() => {
+					console.log(triggered.length, 'reminders triggered for channel', chanID);
+				}).catch(err => {
+					console.error(err);
+				});
+				if(triggered.length) {
+					reminders=reminders.filter(a => {
+						return !triggered.includes(a);
+					});
+					return store.set('reminders', chanID, reminders);
+				}
+				return Promise.resolve(true);
+			}).catch(err => {
+				console.error(err);
+			});
 		});
-	}, config('reminders.precision'));
-	console.log('reminder command loaded');
+	});
+		console.log('reminder command loaded');
 }).catch(function(e) {
 	console.error(e);
 });
@@ -110,5 +113,5 @@ module.type='command';
 module.unload=() => {
 	delete shared.commands.remind;
 	store.writeStore('reminders').catch(console.error);
-	if(intervalHandler!==undefined) clearInterval(intervalHandler);
+	cron.remove(tabID);
 };
