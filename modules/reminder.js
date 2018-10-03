@@ -77,7 +77,8 @@ store.ensureStore('reminders').then(function() {
 				let channel=shared.bot.channels.get(chanID);
 				if(!reminders.length) {
 					delete channels[chanID];
-					return store.writeStore('reminders');
+					console.log('purged channel', chanID);
+					return store.writeStore('reminders', true);
 				}
 				let triggered=reminders.filter(reminder => {
 					return reminder.timestamp<=now;
@@ -88,7 +89,7 @@ store.ensureStore('reminders').then(function() {
 					return channel.send(msg);
 				});
 				Promise.all(promises).then(() => {
-					console.log(triggered.length, 'reminders triggered for channel', chanID);
+					if(triggered.length) console.log(triggered.length, 'reminders triggered for channel', chanID);
 				}).catch(err => {
 					console.error(err);
 				});
