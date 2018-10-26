@@ -11,14 +11,16 @@ function printEdt(week) {
 			const calendar=shared.calendars[group.name];
 			const channel=shared.bot.channels.get(group.channel);
 			const events=week?calendar.getForWeek():calendar.getForDay(new Date(Date.now()+dates.oneDay));
-			const embed=edt.createEmbed(events);
-			channel.send(embed).catch(err => console.error(err));
+			if(events.length) {
+				const embed=edt.createEmbed(events);
+				channel.send(embed).catch(err => console.error(err));
+			}
 		}
 	}).catch(err => console.error(err));
 }
 
 const eachWeek=cron('0	9	0	*	0', printEdt.bind(null, true));
-const eachDay=cron('0	18	1-4	*	0', printEdt.bind(null, false));
+const eachDay=cron('0	18	0-4	*	0', printEdt.bind(null, false));
 
 module.unload=function() {
 	cron.remove(eachDay);
