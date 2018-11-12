@@ -1,6 +1,9 @@
 const Discord=require('discord.js');
 const Calendar=require('./calendar');
 
+// regex
+const reg=/^(\+|\-)([0-9]+)$/;
+
 // load the calendars
 if(!shared.rooms) shared.rooms=[];
 config('rooms').forEach(room => {
@@ -10,6 +13,16 @@ config('rooms').forEach(room => {
 // register the command
 shared.commands.room=function(msg, args) {
 	let time=Date.now();
+	// parse argument
+	if(args.length==1 && reg.test(args[0])) {
+		let [_, sign, disp]=reg.match(args[0]);
+		disp=((sign=='-')?-1:1)*(+disp)*dates.oneHour;
+		time+=disp;
+	} else if(args.length!=0 || isNaN(time)) {
+		return msg.reply("**ERROR**: Failed to calculate time displacement");
+	}
+	
+	// get available rooms
 	let avail=[];
 	for(let k in shared.rooms) {
 		if(shared.rooms.hasOwnProperty(k)) avail.push(shared.rooms[k]);
@@ -17,20 +30,21 @@ shared.commands.room=function(msg, args) {
 	avail=avail.filter(room => {
 		let evt=room.getForTime(time);
 		console.log(room.name, evt)
-		return !evt;
-		
+		return !evt;	
 	}).map(room => {
 		console.log(room.name, 'avail');
 		return room.name;
 	});
-	let embed=new Discord.RichEmbed();
 	
+	// create result embed
+	let embed=new Discord.RichEmbed();
 	embed.setTitle("Salles informatiques");
 	embed.setTimestamp(new Date());
 	for(let key in shared.rooms) {
 		embed.addField(key, (avail.indexOf(key)!=-1)?"Disponible":"Occupé", true);
 	}
 	
+	// return the result
 	return msg.reply(embed);
 };
 
