@@ -40,7 +40,7 @@ shared.commands.room=function(msg, args) {
 	// create result embed
 	let embed=new Discord.RichEmbed();
 	embed.setTitle("Salles informatiques");
-	embed.setTimestamp(new Date(time));
+	embed.setTimestamp(time);
 	for(let key in shared.rooms) {
 		embed.addField(key, (avail.indexOf(key)!=-1)?"Disponible":"Occupé", true);
 	}
