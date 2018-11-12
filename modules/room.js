@@ -17,11 +17,12 @@ shared.commands.room=function(msg, args) {
 	// parse argument
 	if(args.length==1 && reg.test(args[0])) {
 		let [_, sign, disp]=reg.exec(args[0]);
-		console.log(sign, '/', disp);
 		disp=((sign=='-')?-1:1)*(+disp)*dates.oneHr;
 		time+=disp;
-		console.log(time-Date.now());
-	} else if(args.length!=0 || isNaN(time)) {
+	} else if(args.length!=0) {
+		return msg.reply("**ERROR**: Wrong syntax for command");
+	}
+	if(isNaN(time)) {
 		return msg.reply("**ERROR**: Failed to calculate time displacement");
 	}
 	
@@ -31,11 +32,8 @@ shared.commands.room=function(msg, args) {
 		if(shared.rooms.hasOwnProperty(k)) avail.push(shared.rooms[k]);
 	}
 	avail=avail.filter(room => {
-		let evt=room.getForTime(time);
-		console.log(room.name, evt)
-		return !evt;	
+		return !room.getForTime(time);
 	}).map(room => {
-		console.log(room.name, 'avail');
 		return room.name;
 	});
 	
