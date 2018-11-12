@@ -15,7 +15,7 @@ shared.commands.room=function(msg, args) {
 	let time=Date.now();
 	// parse argument
 	if(args.length==1 && reg.test(args[0])) {
-		let [_, sign, disp]=reg.match(args[0]);
+		let [_, sign, disp]=reg.exec(args[0]);
 		disp=((sign=='-')?-1:1)*(+disp)*dates.oneHour;
 		time+=disp;
 	} else if(args.length!=0 || isNaN(time)) {
