@@ -56,7 +56,13 @@ shared.commands.room.help={
 	admin: false,
 	category: 'util'
 };
-shared.commands.room.usage=[];
+shared.commands.room.usage=[
+	{
+		name: 'offset',
+		required: false,
+		desc: "Dans combien d'heures chercher, sous la forme d'un signe et d'un entier"
+	}
+];
 
 module.type='command';
 module.unload=() => {
