@@ -14,7 +14,7 @@ shared.commands.room=function(msg, args) {
 	for(let k in shared.rooms) {
 		if(shared.rooms.hasOwnProperty(k)) avail.push(shared.rooms[k]);
 	}
-	avail.filter(room => {
+	avail=avail.filter(room => {
 		let evt=room.getForTime(time);
 		console.log(room.name, evt)
 		return !evt;
@@ -28,7 +28,7 @@ shared.commands.room=function(msg, args) {
 	embed.setTitle("Salles informatiques");
 	embed.setTimestamp(new Date());
 	for(let key in shared.rooms) {
-		embed.addField(key, avail.includes(key)?"Disponible":"Occupé", true);
+		embed.addField(key, (avail.indexOf(key)!=-1)?"Disponible":"Occupé", true);
 	}
 	
 	return msg.reply(embed);
