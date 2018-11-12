@@ -17,7 +17,7 @@ shared.commands.room=function(msg, args) {
 	// parse argument
 	if(args.length==1 && reg.test(args[0])) {
 		let [_, sign, disp]=reg.exec(args[0]);
-		console.log(sign, disp);
+		console.log(sign, '/', disp);
 		disp=((sign=='-')?-1:1)*(+disp)*dates.oneHour;
 		time+=disp;
 		console.log(time-Date.now());
