@@ -19,6 +19,7 @@ shared.commands.room=function(msg, args) {
 		let [_, sign, disp]=reg.exec(args[0]);
 		disp=((sign=='-')?-1:1)*(+disp)*dates.oneHour;
 		time+=disp;
+		console.log(time-Date.now());
 	} else if(args.length!=0 || isNaN(time)) {
 		return msg.reply("**ERROR**: Failed to calculate time displacement");
 	}
