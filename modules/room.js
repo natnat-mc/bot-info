@@ -10,7 +10,15 @@ config('rooms').forEach(room => {
 // register the command
 shared.commands.room=function(msg, args) {
 	let time=Date.now();
-	let avail=shared.rooms.filter(room => !room.getForTime(time)).map(room => room.name);
+	let avail=shared.rooms.filter(room => {
+		let evt=room.getForTime(time);
+		console.log(room.name, evt)
+		return !evt;
+		
+	}).map(room => {
+		console.log(room.name, 'avail');
+		return room.name;
+	});
 	let embed=new Discord.RichEmbed();
 	
 	embed.setTitle("Salles informatiques");
