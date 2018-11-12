@@ -105,7 +105,7 @@ class Calendar extends EE {
 	}
 	
 	getForTime(time) {
-		return this.ics.events.find(evt => evt.start.getTime()>=time && evt.end.getTime()<=time);
+		return this.ics.events.find(evt => evt.start.getTime()<=time && evt.end.getTime()>=time);
 	}
 	getForDate(start, end) {
 		return this.ics.getForDate(start, end);
