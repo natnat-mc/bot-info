@@ -10,7 +10,11 @@ config('rooms').forEach(room => {
 // register the command
 shared.commands.room=function(msg, args) {
 	let time=Date.now();
-	let avail=shared.rooms.filter(room => {
+	let avail=[];
+	for(let k in shared.rooms) {
+		if(shared.rooms.hasOwnProperty(k)) avail.push(shared.rooms[k]);
+	}
+	avail.filter(room => {
 		let evt=room.getForTime(time);
 		console.log(room.name, evt)
 		return !evt;
