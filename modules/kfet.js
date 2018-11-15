@@ -2,6 +2,10 @@ const request=require('request');
 const {JSDOM}=require('jsdom');
 const cron=require('./cron');
 
+if(!shared.kfet) {
+	shared.kfet={};
+}
+
 /** global KFet array
  * boolean array, from 0-99
  * true if it is done
