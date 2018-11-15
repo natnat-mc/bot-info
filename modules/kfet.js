@@ -19,8 +19,8 @@ if(!shared.kfet.avail) {
  * everything in there will be called with an object describing the change
  * if the property once is set, then it will be removed automatically afterwards
  */
-if(!shared.kfet.handler) {
-	shared.kfet.handler=[];
+if(!shared.kfet.handlers) {
+	shared.kfet.handlers=[];
 }
 
 /** update KFet data
@@ -50,7 +50,7 @@ function reloadKfet() {
 		// get all the nodes
 		let nodes=[];
 		for(let i=0; i<100; i++) {
-			nodes[i]=dom.getElementById(i+1);
+			nodes[i]=document.getElementById(i+1);
 		}
 		return nodes;
 	}).then(nodes => {
