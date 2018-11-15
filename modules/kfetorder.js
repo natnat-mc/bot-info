@@ -60,7 +60,6 @@ loader.require('kfet').then(() => {
 });
 
 /** add a list of orders to the waiting list
- * don't allow duplicates (user + channel + order tuple)
  */
 function addOrders(msg, list) {
 	let user=msg.author.id;
