@@ -71,12 +71,13 @@ function reloadKfet() {
 		}
 		return diff;
 	}).then(diff => {
+		let toRem=[];
+		
 		// call the handlers
 		if(diff.added.length || diff.removed.length) {
-			let toRem=[];
 			shared.kfet.handlers.forEach((handler, idx) => {
-					handler(diff);
-					if(handler.once) toRem.unshift(idx);
+				handler(diff);
+				if(handler.once) toRem.unshift(idx);
 			});
 		}
 		
