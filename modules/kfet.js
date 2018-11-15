@@ -26,9 +26,9 @@ if(!shared.kfet.handler) {
  * store everything in a global array
  */
 function reloadKfet() {
-	return new Promise((resolve, reject) -> {
+	return new Promise((resolve, reject) => {
 		// read the raw HTML
-		request('https://iutdoua-web.univ-lyon1.fr/~p1700290/KfetBDE/', (err, head, body) -> {
+		request('https://iutdoua-web.univ-lyon1.fr/~p1700290/KfetBDE/', (err, head, body) => {
 			if(err) {
 				return reject(err);
 			} else if(head.statusCode!=200) {
@@ -36,23 +36,23 @@ function reloadKfet() {
 			}
 			resolve(body);
 		});
-	}).then(html -> {
+	}).then(html => {
 		// parse the HTML
 		return new JSDOM(html);
-	}).then(dom -> {
+	}).then(dom => {
 		// get the document
 		return dom.window.document;
-	}).then(document -> {
+	}).then(document => {
 		// get all the nodes
 		let nodes=[];
 		for(let i=0; i<100; i++) {
 			nodes[i]=dom.getElementById(i+1);
 		}
 		return nodes;
-	}).then(nodes -> {
+	}).then(nodes => {
 		// get their status
-		return nodes.map(node -> node.classList.contains('tdVertConsult'));
-	}).then(avail -> {
+		return nodes.map(node => node.classList.contains('tdVertConsult'));
+	}).then(avail => {
 		// get a diff
 		let diff={
 			added: [],
@@ -66,16 +66,16 @@ function reloadKfet() {
 			}
 		}
 		return diff;
-	}).then(diff -> {
+	}).then(diff => {
 		// call the handlers
 		let toRem=[];
-		shared.kfet.handlers.forEach((handler, idx) -> {
+		shared.kfet.handlers.forEach((handler, idx) => {
 			handler(diff):
 			if(handler.once) toRem.unshift(idx);
 		});
 		
 		// remove old handlers
-		toRem.forEach(idx -> {
+		toRem.forEach(idx => {
 			shard.kfet.handlers.splice(idx, 1);
 		});
 	});
@@ -87,7 +87,7 @@ function reloadKfet() {
  */
 exports.get=function(idx) {
 	if(Array.isArray(idx)) {
-		return idx.map(idx -> shared.kfet.avail[idx]);
+		return idx.map(idx => shared.kfet.avail[idx]);
 	}
 	return shared.kfet.avail[idx];
 }
@@ -105,7 +105,7 @@ const cronID=cron('*	1-5	8-15	*	0', reloadKfet);
 reloadKfet();
 
 module.type='service'
-module.unload=() -> {
+module.unload=() => {
 	// uninstall crontab rule
 	cron.remove(cronID);
 };
