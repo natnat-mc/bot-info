@@ -70,7 +70,7 @@ function reloadKfet() {
 		// call the handlers
 		let toRem=[];
 		shared.kfet.handlers.forEach((handler, idx) => {
-			handler(diff):
+			handler(diff);
 			if(handler.once) toRem.unshift(idx);
 		});
 		
