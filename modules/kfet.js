@@ -66,17 +66,19 @@ function reloadKfet() {
 			if(avail[i]!=shared.kfet.avail[i]) {
 				shared.kfet.avail[i]=avail[i];
 				if(avail[i]) diff.added.push(i);
-				else diff.remove.push(i);
+				else diff.removed.push(i);
 			}
 		}
 		return diff;
 	}).then(diff => {
 		// call the handlers
-		let toRem=[];
-		shared.kfet.handlers.forEach((handler, idx) => {
-			handler(diff);
-			if(handler.once) toRem.unshift(idx);
-		});
+		if(diff.added.length || diff.removed.length) {
+			let toRem=[];
+			shared.kfet.handlers.forEach((handler, idx) => {
+					handler(diff);
+					if(handler.once) toRem.unshift(idx);
+			});
+		}
 		
 		// remove old handlers
 		toRem.forEach(idx => {
@@ -98,12 +100,12 @@ exports.get=function(idx) {
 
 /** install crontab rule
  * every minute (*)
- * everyday of week (1-5)
  * starting at 8AM, ending at 3PM (8-15)
+ * everyday of week (1-5)
  * every month (*)
  * no particular day of month (0)
  */
-const cronID=cron('*	1-5	8-15	*	0', reloadKfet);
+const cronID=cron('*	8-15	1-5	*	0', reloadKfet);
 
 // run it at least once
 reloadKfet();
