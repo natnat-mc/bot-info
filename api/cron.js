@@ -83,6 +83,25 @@ function matchDate(date, entry) {
 	return matchPart(date, entry, 'minute');
 }
 
+/** crontab add
+ * @arg 0 string time
+ * @arg 1 function fn
+ * @return int id
+ * adds fn to the crontab and returns its id
+ * time has the following format:
+ * 'm h DoW M D'
+ * where:	m is the minute
+ * 			h is the hour
+ * 			DoW is the day of week
+ * 			M is the month
+ * 			D is the day of month
+ * all the time parts can be either:
+ * 	* to trigger for every value
+ * 	coma-separated numeric values
+ * 	a range, using a '-' char
+ * 	* divided by a value, which will trigger every n values
+ * 	a range divided by a value
+ */
 function add(time, fn) {
 	let parts=time.split(/\s+/g);
 	let timeObj={};
@@ -97,6 +116,9 @@ function add(time, fn) {
 	return timeObj.id;
 }
 
+/** crontab remove
+ * removes an event given its id
+ */
 function remove(id) {
 	let oldLen=crontab.length;
 	crontab=crontab.filter(evt => evt.id!=id);

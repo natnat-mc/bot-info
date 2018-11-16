@@ -1,3 +1,7 @@
+
+/** mention generator
+ * returns a string mentioning a user, role or channel
+ */
 function getMention(id, kind) {
 	switch(kind || 'user') {
 		case 'user':

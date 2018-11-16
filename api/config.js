@@ -2,6 +2,10 @@ const fs=require('fs');
 
 let data;
 
+/** config getter
+ * returns a config value, given a key in dot notation
+ * keys can contain every character, except for the dot
+ */
 function get(key) {
 	key=key.split('.');
 	let obj=data;

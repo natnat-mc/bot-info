@@ -30,7 +30,7 @@ function commands(msg) {
 	}
 }
 
-/* Parses a command string, removing the prefix and returning the command and arguments.
+/** Parses a command string, removing the prefix and returning the command and arguments.
  * If the string isn't a command string, returns null.
  * The values are returned as an object {cmd, args}.
  * This code allows for several escape sequences:

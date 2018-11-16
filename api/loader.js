@@ -13,7 +13,10 @@ class Loader {
 		this.queue=[];
 		this.busy=false;
 	}
-
+	
+	/** available modules list
+	 * returns a list of all modules that can be loaded
+	 */
 	get available() {
 		return fs.readdirSync(this.path).map(function(name) {
 			if(name.endsWith('.js')) {
@@ -23,7 +26,10 @@ class Loader {
 			}
 		});
 	}
-
+	
+	/** loaded modules list
+	 * returns a list of all loaded modules
+	 */
 	get list() {
 		let list=[];
 		for(let k in this.loaded) {
@@ -31,7 +37,11 @@ class Loader {
 		}
 		return list;
 	}
-
+	
+	/** module loader
+	 * loads a module given its name as a Promise
+	 * doesn't reload any loaded module
+	 */
 	load(name) {
 		let file=this.path+'/'+name;
 		let filename=file;
@@ -58,10 +68,10 @@ class Loader {
 				name: name,
 				displayErrors: true
 			});
-
+			
 			context.shared=shared;
 			context.config=config;
-
+			
 			context.console=console;
 			context.require=require;
 			context.Buffer=Buffer;
@@ -72,22 +82,22 @@ class Loader {
 			context.setImmediate=setImmediate;
 			context.setInterval=setInterval;
 			context.setTimeout=setTimeout;
-
+			
 			context.module={}
 			context.module.name=name;
 			context.module.exports={};
 			context.module.loader=self;
 			context.module.loadTime=new Date();
-
+			
 			context.exports=context.module.exports;
 			context.loader=context.module.loader;
 			context.global=context;
-
+			
 			vm.runInContext(code, context, {
 				filename: filename,
 				displayErrors: true
 			});
-
+			
 			self.loaded[file]=context.module;
 			self.busy=false;
 			let next=self.queue.shift();
@@ -100,7 +110,11 @@ class Loader {
 			throw e;
 		});
 	}
-
+	
+	/** module require
+	 * loads any number of modules as a Promise
+	 * doesn't reload any module
+	 */
 	require(names) {
 		const self=this;
 		if(names instanceof Array) {
@@ -129,7 +143,10 @@ class Loader {
 			return Promise.reject(new Error('Ilegal argument to Loader.require'));
 		}
 	}
-
+	
+	/** module unloader
+	 * unloads a module
+	 */
 	unload(name) {
 		if(this.busy) {
 			return new Promise(function(ok, nok) {
@@ -148,11 +165,17 @@ class Loader {
 		}
 		return Promise.resolve(delete this.loaded[this.path+'/'+name]);
 	}
-
+	
+	/** module reloader
+	 * reloads a module
+	 */
 	reload(name) {
 		return this.unload(name).then(this.load.bind(this, name));
 	}
 	
+	/** module mass reloader
+	 * reloads all modules sequentially
+	 */
 	reloadAll() {
 		const self=this;
 		return Promise.all(this.list.map(function(module) {
@@ -160,6 +183,9 @@ class Loader {
 		}));
 	}
 	
+	/** module mass loader
+	 * loads all available modules
+	 */
 	loadAll() {
 		return this.require(this.available);
 	}

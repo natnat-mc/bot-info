@@ -7,6 +7,11 @@ try {
 	fs.mkdirSync('./data');
 } catch(e) {}
 
+/** store getter
+ * returns a store as a Promise
+ * if it is already in RAM, then return it
+ * fail if it doesn't exist
+ */
 function getStore(name) {
 	return new Promise(function(ok, fail) {
 		if(store[name]) {
@@ -28,6 +33,11 @@ function getStore(name) {
 	});
 }
 
+/** store writer
+ * persists a store to disk
+ * may not actually do anything to avoid using too much disk IO
+ * can be forced with the second argument
+ */
 function writeStore(name, force) {
 	return new Promise(function(ok, fail) {
 		if(!store[name]) {
@@ -46,6 +56,10 @@ function writeStore(name, force) {
 	});
 }
 
+/** store maker
+ * creates a store and writes it to disk
+ * fails if it already exists
+ */
 function createStore(name) {
 	return new Promise(function(ok, fail) {
 		if(store[name]) {
@@ -65,10 +79,17 @@ function createStore(name) {
 	})
 }
 
+/** store ensure
+ * makes sure a store exists, and returns true if it created it
+ */
 function ensureStore(name) {
 	return createStore(name).catch(() => false).then(() => true);
 }
 
+/** data getter
+ * returns a single piece of data from a store
+ * you shouldn't write there yourself unless you know what you're doing
+ */
 function get(name, key) {
 	return getStore(name).then(function(data) {
 		if(key===undefined) {
@@ -88,6 +109,10 @@ function get(name, key) {
 	});
 }
 
+/** data setter
+ * writes data into a store
+ * may trigger automatic writing
+ */
 function set(name, key, value) {
 	return getStore(name).then(function(data) {
 		if(key===undefined) {

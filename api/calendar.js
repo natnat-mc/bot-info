@@ -104,18 +104,34 @@ class Calendar extends EE {
 		}
 	}
 	
+	/** event getter, time mode
+	 * returns the first event happening at the given time
+	 */
 	getForTime(time) {
 		return this.ics.events.find(evt => evt.start.getTime()<=time && evt.end.getTime()>=time);
 	}
+	
+	/** event getter, range mode
+	 * returns every event between the given bounds
+	 */
 	getForDate(start, end) {
 		return this.ics.getForDate(start, end);
 	}
+	
+	/** event getter, day mode
+	 * returns every event during a given day
+	 */
 	getForDay(day) {
 		let today=day?new Date(day.getTime()):new Date();
 		today.setUTCHours(0, 0, 0, 0);
 		let tomorrow=new Date(today.getTime()+dates.oneDay);
 		return this.ics.getForDate(today, tomorrow);
 	}
+	
+	/** event getter, week mode
+	 * returns every event during a given week
+	 * a week starts on Sunday
+	 */
 	getForWeek(day) {
 		let today=day?new Date(day.getTime()):new Date();
 		today.setUTCHours(0, 0, 0, 0);

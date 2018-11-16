@@ -1,5 +1,8 @@
 const {dateToTime, datesToRange}=require('./dates');
 
+/** ICalendar date parser
+ * returns a Date for a given ICalendar date string
+ */
 function parseDate(str) {
 	let time={
 		year: +str.substr(0, 4),
@@ -23,6 +26,10 @@ function parseDate(str) {
 	return date;
 }
 
+/** Event class
+ * represents a calendar event
+ * for now, only VEVENT's with a duration are supported
+ */
 class Event {
 	constructor() {
 		this.start=null;
@@ -32,6 +39,9 @@ class Event {
 		this.loc=null;
 	}
 	
+	/** short description
+	 * returns a short description of the event
+	 */
 	get short() {
 		let time='NO DATE';
 		if(this.start&&this.end) {
@@ -68,10 +78,17 @@ class Event {
 	}
 }
 
+/** class ICalendar
+ * holds ICalendar's, parses them, and operates on them
+ */
 class ICS {
 	constructor() {
 		this.events=[];
 	}
+	
+	/** ICalendar parser
+	 * parses an ICalendar string into an ICS object
+	 */
 	static parse(code) {
 		const lines=code.split(/\r?\n/);
 		let lineno=0;
@@ -121,7 +138,10 @@ class ICS {
 			}
 		}
 	}
-
+	
+	/** event getter
+	 * returns all events between the bounds
+	 */
 	getForDate(begin, end) {
 		if(begin instanceof Date) begin=begin.getTime();
 		if(end instanceof Date) end=end.getTime();
@@ -132,6 +152,9 @@ class ICS {
 		});
 	}
 	
+	/** change finder
+	 * finds everything that changed between two calendars
+	 */
 	static findChanges(oldCal, newCal) {
 		let oldPos=0, newPos=0;
 		let removed=[], added=[], modified=[], unchanged=[];
