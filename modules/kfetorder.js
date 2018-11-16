@@ -16,7 +16,7 @@ loader.require('kfet').then(() => {
  * every month (*)
  * every day (*)
  */
-cron('0	15	0	*	*', () => {
+const cronID=cron('0	15	0	*	*', () => {
 	shared.kfet.waiting.forEach(waiting => {
 		let channel=shared.bot.channels.get(waiting.channel);
 		let mention=discord.getMention(waiting.user, 'user');
