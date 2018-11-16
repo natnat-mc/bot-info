@@ -145,7 +145,7 @@ shared.commands.kfet=function(msg, args) {
 	
 	if(passive) {
 		return loader.require('kfet').then(kfet => {
-			let add=addOrders(msg, orders.filter(order => !kfet.get(order)));
+			let add=addOrders(msg, orders.filter(order => !kfet.get(order-1)));
 			let list=listOrders(msg, orders);
 			return Promise.all([add, list]);
 		});
