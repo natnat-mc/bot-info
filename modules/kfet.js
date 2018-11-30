@@ -32,7 +32,7 @@ if(!shared.kfet.handlers) {
 function reloadKfet() {
 	return new Promise((resolve, reject) => {
 		// read the raw HTML
-		request('https://iutdoua-web.univ-lyon1.fr/~p1700290/KfetBDE/', (err, head, body) => {
+		request('https://kfet.bdeinfo.org', (err, head, body) => {
 			if(err) {
 				return reject(err);
 			} else if(head.statusCode!=200) {
