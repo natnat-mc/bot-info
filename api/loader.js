@@ -149,6 +149,7 @@ class Loader {
 	 */
 	unload(name) {
 		if(this.busy) {
+			const self=this;
 			return new Promise(function(ok, nok) {
 				self.queue.push(function() {
 					ok(self.unload(name));
