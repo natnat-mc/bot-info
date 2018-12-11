@@ -31,31 +31,23 @@ if(!shared.kfet.handlers) {
  */
 function reloadKfet() {
 	return new Promise((resolve, reject) => {
-		// read the raw HTML
-		request('https://kfet.bdeinfo.org', (err, head, body) => {
+		// read the raw JSON
+		request('https://kfet.bdeinfo.org/?page=api_commandes', (err, head, body) => {
 			if(err) {
 				return reject(err);
 			} else if(head.statusCode!=200) {
 				return reject(new Error('status code is '+head.statusCode));
 			}
-			resolve(body);
+			resolve(JSON.parse(body));
 		});
-	}).then(html => {
-		// parse the HTML
-		return new JSDOM(html);
-	}).then(dom => {
-		// get the document
-		return dom.window.document;
-	}).then(document => {
-		// get all the nodes
-		let nodes=[];
-		for(let i=0; i<100; i++) {
-			nodes[i]=document.getElementById(i+1);
-		}
-		return nodes;
-	}).then(nodes => {
+	}).then(json => {
 		// get their status
-		return nodes.map(node => node.classList.contains('tdVertConsult'));
+		let arr=[];
+		for(let i=0; i<100; i++) {
+			let part=json[i+1+''];
+			arr[i]=part && part.statut=='T' || false;
+		}
+		return arr;
 	}).then(avail => {
 		// get a diff
 		let diff={
@@ -85,6 +77,10 @@ function reloadKfet() {
 		toRem.forEach(idx => {
 			shard.kfet.handlers.splice(idx, 1);
 		});
+	}).then(() => {
+		console.log('Reloaded KFet');
+	}).catch(e => {
+		console.error('Failed reloading KFet', e);
 	});
 }
 
