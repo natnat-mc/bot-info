@@ -9,7 +9,8 @@ shared.commands.remind=function(msg, args) {
 
 let tabID;
 store.ensureStore('reminders').then(function() {
-	shared.commands.remind=function(msg, args) {
+	shared.commands.remind=async function(msg, args) {
+		// parse arguments
 		let time=args.shift();
 		let txt=args.join(' ');
 		if(time===undefined) {
@@ -29,23 +30,34 @@ store.ensureStore('reminders').then(function() {
 		} else {
 			return msg.reply('**ERROR**: unknown suffix format');
 		}
+		
+		// load 'up' reminder
+		if(txt=='up') {
+			try {
+				txt=await store.get('reminders', 'up'+msg.author.id);
+			} catch(e) {
+				return await msg.reply("You don't have an `up` reminder");
+			}
+		}
+		
+		// create reminder
 		let date=new Date(Date.now()+time);
-		store.get('reminders', msg.channel.id+'.length').catch(function() {
-			store.set('reminders', msg.channel.id, []);
-			return 0;
-		}).then(function(len) {
-			store.set('reminders', msg.channel.id+'.'+len, {
+		let len;
+		try {
+			len=await store.get('reminders', msg.channel.id+'.length');
+		} catch(e) {
+			await store.set('reminders', msg.channel.id, []);
+		}
+		try {
+			await store.set('reminders', msg.channel.id+'.'+len, {
 				timestamp: date.getTime(),
 				message: txt,
 				user: msg.author.id
 			});
-		}).catch(function() {
+		} catch(e) {
 			msg.reply('**ERROR**: couldn\'t set reminder');
-		}).then(function() {
-			msg.reply('Rappel enregistré pour '+dates.dateToTime(date));
-		}).catch(function() {
-			msg.reply("Genre vraiment?");
-		});
+		}
+		msg.reply('Rappel enregistré pour '+dates.dateToTime(date));
 	};
 	
 	shared.commands.remind.usage=[
@@ -57,7 +69,7 @@ store.ensureStore('reminders').then(function() {
 		{
 			name: 'text',
 			required: true,
-			desc: "Le texte qui va être envoyé par le bot quand le temps sera écoulé"
+			desc: "Le texte qui va être envoyé par le bot quand le temps sera écoulé; `up` répètera le dernier rappel déclenché"
 		}
 	];
 	shared.commands.remind.help={
@@ -67,43 +79,42 @@ store.ensureStore('reminders').then(function() {
 		category: 'util'
 	};
 	
-	tabID=cron.add(config('reminders.crontab'), () => {
-		const now=Date.now();
-		store.get('reminders').then(channels => {
-			return [channels, Object.keys(channels)];
-		}).then(([channels, keys]) => {
-			return Promise.all(keys.map(chanID => {
+	tabID=cron.add(config('reminders.crontab'), async () => {
+		try {
+			const now=Date.now();
+			
+			// iterate all channels
+			const channels=await store.get('reminders');
+			const keys=Object.keys(channels).filter(a => !a.startsWith('up'));
+			for(let chanID of keys) {
+				
+				// get channel object and reminders
 				let reminders=channels[chanID];
 				let channel=shared.bot.channels.get(chanID);
 				if(!reminders.length) {
 					delete channels[chanID];
 					console.log('purged channel', chanID);
-					return store.writeStore('reminders', true);
+					await store.writeStore('reminders', true);
 				}
-				let triggered=reminders.filter(reminder => {
-					return reminder.timestamp<=now;
-				});
-				let promises=triggered.map(reminder => {
-					let msg=discord.getMention(reminder.user)+', you have a new reminder:\n';
-					msg+=reminder.message;
-					return channel.send(msg);
-				});
-				Promise.all(promises).then(() => {
-					if(triggered.length) console.log(triggered.length, 'reminders triggered for channel', chanID);
-				}).catch(err => {
-					console.error(err);
-				});
+				
+				// trigger reminders
+				let triggered=reminders.filter(a => a.timestamp<=now);
+				for(let reminder of triggered) {
+					let msg=discord.getMention(reminder.user)+', you have a new reminder:\n'+reminder.message;
+					await channel.send(msg);
+					await store.set('reminders', 'up'+reminder.user, reminder.message)
+				}
+				
+				// drop used reminders
 				if(triggered.length) {
-					reminders=reminders.filter(a => {
-						return !triggered.includes(a);
-					});
-					return store.set('reminders', chanID, reminders);
+					console.log(triggered.length, 'reminders triggered for channel', chanID);
+					reminders=reminders.filter(a => !triggered.includes(a));
+					await store.set('reminders', chanID, reminders);
 				}
-				return Promise.resolve(true);
-			}));
-		}).catch(err => {
+			}
+		} catch(err) {
 			console.error(err);
-		});
+		}
 	});
 		console.log('reminder command loaded');
 }).catch(function(e) {
