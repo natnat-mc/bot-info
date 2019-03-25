@@ -42,7 +42,7 @@ shared.commands.room=function(msg, args) {
 	embed.setTitle("Salles informatiques");
 	embed.setTimestamp(time);
 	for(let key in shared.rooms) {
-		embed.addField(key, (avail.indexOf(key)!=-1)?"Disponible":"Occupé", true);
+		embed.addField(key, (avail.indexOf(key)!=-1)?"Disponible":"Occupée", true);
 	}
 	
 	// return the result
