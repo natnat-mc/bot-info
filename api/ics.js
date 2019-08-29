@@ -93,6 +93,7 @@ class ICS {
 		const lines=code.split(/\r?\n/);
 		let lineno=0;
 		while(lines[lineno]!='BEGIN:VEVENT') {
+			if(lines[lineno]===undefined) throw new Error("Encountered EOF before the first event");
 			lineno++;
 		}
 		
