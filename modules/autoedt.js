@@ -19,7 +19,7 @@ function printEdt(week) {
 	}).catch(err => console.error(err));
 }
 
-const eachWeek=cron('0	9	0	*	0', printEdt.bind(null, true));
+const eachWeek=cron('0	18	0	*	0', printEdt.bind(null, true));
 const eachDay=cron('0	18	0-4	*	0', printEdt.bind(null, false));
 
 module.unload=function() {
