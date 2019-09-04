@@ -38,7 +38,11 @@ function reloadKfet() {
 			} else if(head.statusCode!=200) {
 				return reject(new Error('status code is '+head.statusCode));
 			}
-			resolve(JSON.parse(body));
+			try {
+				resolve(JSON.parse(body));
+			} catch(e) {
+				reject(e);
+			}
 		});
 	}).then(json => {
 		// get their status
