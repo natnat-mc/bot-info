@@ -5,6 +5,7 @@ const shared=require('./api/shared');
 
 const config=require('./api/config');
 const commands=require('./api/commands');
+const autorespond=require('./api/autoresponders');
 const Calendar=require('./api/calendar');
 const Loader=require('./api/loader');
 
@@ -35,6 +36,7 @@ bot.on('message', msg => {
 		if(msg.content.startsWith(config('bot.prefix')) && !msg.author.bot && msg.content!=config('bot.prefix')) {
 			commands(msg);
 		}
+		autorespond(msg);
 	} catch(e) {
 		console.error(e);
 		msg.reply('ERROR');
