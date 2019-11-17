@@ -170,6 +170,28 @@ const discord=require('./discord');
 		}
 	};
 	
+	// metadata
+	shared.commands.kfet.usage=[
+		{
+			name: '"get"|"register"|"unregister"',
+			required: false,
+			desc: "La sous-commande à executer: `get` (par défaut) lit les commandes sorties, `register` enregistre un n° de commande pour un ping ultérieur et `unregister` oublie l'enregistrement"
+		},
+		{
+			name: 'liste',
+			required: false,
+			desc: "Les commandes à lire ou enregistrer, séparées par des espaces"
+		}
+	];
+	shared.commands.kfet.help={
+		name: 'kfet',
+		desc: "Permet d'accéder aux commandes de la KFet info avec `?kfet get [id...]` et de recevoir des notifications avec `?kfet register <id...>`. Les membres du BDE peuvent aussi définir directement l'état des commandes avec `?kfet set <id> \"ok\"|\"ko\"|\"waiting\"`.",
+		admin: false,
+		category: 'util'
+	};
+	module.type='command';
+	module.desc="Gère les commandes sorties de la KFet info via la commande `?kfet`";
+	
 	// cleanup
 	module.unload=async () => {
 		// detach all triggers

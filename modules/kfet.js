@@ -187,7 +187,8 @@ const EE=require('events');
 		return Object.keys(shared.kfet.avail).map(a => ''+a);
 	};
 	
-	module.type='service'
+	module.type='service';
+	module.desc="Gère le site web kfet.bdeinfo.org et l'API des commandes sorties de la KFet info";
 	module.unload=async () => {
 		await storage.writeStore('kfet', true);
 		cron.remove(cronID);
