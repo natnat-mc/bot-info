@@ -1,191 +1,167 @@
 const Discord=require('discord.js');
 const discord=require('./discord');
-const cron=require('./cron');
 
-// create a waiting list
-loader.require('kfet').then(() => {
-	if(!shared.kfet.waiting) {
-		shared.kfet.waiting=[];
-	}
-});
-
-/** create a task to clean the waiting list
- * at minute 0
- * at 15h (15)
- * not a particular DoW (0)
- * every month (*)
- * every day (*)
- */
-const cronID=cron('0	15	0	*	*', () => {
-	shared.kfet.waiting.forEach(waiting => {
-		let channel=shared.bot.channels.get(waiting.channel);
-		let mention=discord.getMention(waiting.user, 'user');
-		let message=mention + "Votre commande **\\#" + waiting.order + "** n'est pas sortie, elle est donc automatiquement annulée";
-		channel.send(message);
-	});
-	shared.kfet.waiting=[];
-});
-
-/** create a passive handler
- * each time something changes, check who the order belongs to
- * then ping that person to tell them that their order is ready
- * then remove them from the waiting list
- */
-function handler(diff) {
-	let done=[];
-	let messages=[];
-	let added=diff.added.map(a => a+1);
+(async () => {
+	// load kfet module
+	const kfet=await loader.require('kfet');
 	
-	shared.kfet.waiting.forEach((waiting, idx) => {
-		if(added.includes(waiting.order)) {
-			// remove the command from the list
-			done.unshift(idx);
+	// register list
+	const registered=Object.create(null);
+	const registerOrder=(order, channel, user) => {
+		registered[order+':'+channel+':'+user]='waiting';
+	};
+	const unregisterOrder=(order, channel, user) => {
+		delete registered[order+':'+channel+':'+user];
+	};
+	const isOrderRegistered=(order, channel, user) => {
+		return (order+':'+channel+':'+user) in registered;
+	};
+	
+	// state change trigger
+	const stateChangeTrigger=async (state, id) => {
+		for(let k in registered) {
+			let [order, channel, user]=k.split(':');
+			if(order==id) {
+				registered[k]=state;
+				try {
+					await shared.bot.channels.get(channel).send(discord.getMention(user, 'user')+', your order **#'+order+'** entered state *'+state+'*');
+				} catch(e) {
+					console.error(e);
+				}
+			}
+		}
+	};
+	const okTrigger=stateChangeTrigger.bind(null, 'ok');
+	const koTrigger=stateChangeTrigger.bind(null, 'ko');
+	const waitingTrigger=stateChangeTrigger.bind(null, 'waiting');
+	
+	// clear trigger
+	const clearTrigger=async () => {
+		// warn users that their registered orders are lost
+		for(let k in registered) {
+			if(registered[k]=='waiting') {
+				let [order, channel, user]=k.split(':');
+				try {
+					await shared.bot.channels.get(channel).send(discord.getMention(user, 'user')+', your order **#'+order+'** has been automatically discarded');
+				} catch(e) {
+					console.error(e);
+				}
+			}
+		}
+		
+		// delete all registered orders
+		for(let k in registered) {
+			delete registered[k];
+		}
+	};
+	
+	// attach triggers to global emitter
+	shared.kfet.emitter.on('ok', okTrigger);
+	shared.kfet.emitter.on('ko', koTrigger);
+	shared.kfet.emitter.on('waiting', waitingTrigger);
+	shared.kfet.emitter.on('clear', clearTrigger);
+	
+	// command interface
+	shared.commands.kfet=async (msg, args) => {
+		// read subcommand
+		let mode='get';
+		if(args[0]=='register') {
+			mode=args.shift();
+		} else if(args[0]=='unregister') {
+			mode=args.shift();
+		} else if(args[0]=='get') {
+			mode=args.shift();
+		} else if(args.length!=0 && isNaN(+args[0])) {
+			return msg.reply("**ERROR**: Available subcommands: `get`, `register`, `unregister`");
+		}
+		
+		// get channel and user ID
+		let channel=msg.channel.id;
+		let user=msg.author.id;
+		
+		// parse order list
+		args=args.map(a => +a);
+		if(args.some(a => isNaN(a)||a%1||a<1)) {
+			return msg.reply("**ERROR**: Order IDs are strictly positive integers");
+		}
+		
+		// 'get' subcommand
+		if(mode=='get') {
+			// if no order is specified, list them all
+			if(args.length==0) {
+				args=kfet.list().map(a => +a);
+			}
 			
-			// send a message
-			let channel=shared.bot.channels.get(waiting.channel);
-			let mention=discord.getMention(waiting.user, 'user');
-			let message=mention + "Votre commande **\\#" + waiting.order + "** vient de sortir";
-			messages.push(channel.send(message))
+			// build a RichEmbed based on the orders
+			let embed=new Discord.RichEmbed();
+			embed.setTitle("Available orders");
+			embed.setURL("http://kfet.bdeinfo.org");
+			embed.setTimestamp(new Date());
+			let orders={ok: [], ko: [], waiting: []};
+			args.forEach(id => orders[kfet.get(id)].push(id));
+			for(let k in orders) {
+				embed.addField(k, orders[k].length==0?'None': orders[k].map(a => '**`'+a+'`**').join(' '));
+			}
+			
+			// send the generated RichEmbed back
+			return msg.reply(embed);
 		}
-	});
-	
-	done.forEach(idx => {
-		shared.kfet.waiting.splice(idx, 1);
-	});
-	
-	return Promise.all(messages);
-}
-loader.require('kfet').then(() => {
-	shared.kfet.handlers.push(handler);
-});
-
-/** add a list of orders to the waiting list
- */
-function addOrders(msg, list) {
-	let user=msg.author.id;
-	let channel=msg.channel.id;
-	return Promise.resolve().then(() => {
-		list.forEach(order => {
-			shared.kfet.waiting.push({user, channel, order});
-		});
-	});
-}
-
-// list all orders and return them in a RichEmbed
-function listOrders(msg, list) {
-	return loader.require('kfet').then(kfet => {
-		let done=[];
-		let notDone=[];
 		
-		for(let n of list) {
-			if(kfet.get(n-1)) {
-				done.push(n);
-			} else {
-				notDone.push(n);
+		// 'register' subcommand
+		else if(mode=='register') {
+			// if no order is specified, that's an error
+			if(args.length==0) {
+				return msg.reply("**ERROR**: At least one order must be supplied");
+			}
+			
+			let alreadyRegistered=args.filter(a => isOrderRegistered(a, channel, user));
+			let notRegistered=args.filter(a => !isOrderRegistered(a, channel, user));
+			if(alreadyRegistered.length!=0) {
+				await msg.reply("Orders "+alreadyRegistered.join(',')+" were already registered, ignoring.");
+			}
+			notRegistered.forEach(a => registerOrder(a, channel, user));
+			if(notRegistered.length!=0) {
+				await msg.reply("Orders "+notRegistered.join(',')+" successfuly registered.");
 			}
 		}
 		
-		let dtext='';
-		for(let i=0; i<done.length; i++) {
-			if(i%4==0 && dtext) {
-				dtext+="\n";
+		// 'unregister' subcommand
+		else if(mode=='unregister') {
+			// if no order is specified, that's an error
+			if(args.length==0) {
+				return msg.reply("**ERROR**: At least one order must be supplied");
 			}
-			dtext+="**`" + done[i] + "`** ";
-		}
-		let ndtext='';
-		for(let i=0; i<notDone.length; i++) {
-			if(i%4==0 && ndtext) {
-				ndtext+="\n";
+			
+			let alreadyRegistered=args.filter(a => isOrderRegistered(a, channel, user));
+			let notRegistered=args.filter(a => !isOrderRegistered(a, channel, user));
+			if(notRegistered.length!=0) {
+				await msg.reply("Orders "+notRegistered.join(',')+" were not registered, ignoring.");
 			}
-			ndtext+="**`" + notDone[i] + "`** ";
+			alreadtRegistered.forEach(a => unregisterOrder(a, channel, user));
+			if(alreadyRegistered.length!=0) {
+				await msg.reply("Orders "+alreadyRegistered.join(',')+" successfuly unregistered.");
+			}
 		}
+	};
+	
+	// cleanup
+	module.unload=async () => {
+		// detach all triggers
+		shared.kfet.emitter.removeListener('ok', okTrigger);
+		shared.kfet.emitter.removeListener('ko', koTrigger);
+		shared.kfet.emitter.removeListener('waiting', waitingTrigger);
+		shared.kfet.emitter.removeListener('clear', clearTrigger);
 		
-		let embed=new Discord.RichEmbed();
-		embed.setTitle("Commandes sorties");
-		embed.setURL("http://kfet.bdeinfo.org");
-		embed.setAuthor("KFet BDE");
-		embed.addField("Prêt", dtext || "Aucune", true);
-		embed.addField("En cours", ndtext || "Aucune", true);
-		embed.setTimestamp(new Date());
-		
-		return msg.reply(embed);
-	});
-}
-
-// the ?kfet command
-shared.commands.kfet=function(msg, args) {
-	let orders=[];
-	let passive=false;
-	
-	if(args.length==0) {
-		for(let i=1; i<=100; i++) {
-			orders.push(i);
+		// warn users that their registered orders are lost
+		for(let k in registered) {
+			if(registered[k]=='waiting') {
+				let [order, channel, user]=k.split(':');
+				try {
+					await shared.bot.channels.get(channel).send(discord.getMention(user, 'user')+', the bot is reloading; please re-register your order **#'+order+'** or it will be lost');
+				} catch(e) {
+					console.error(e);
+				}
+			}
 		}
-	}
-	
-	if(args[0]=='register') {
-		passive=true;
-		args.shift();
-	}
-	
-	let illegal=[];
-	args.forEach(arg => {
-		let order=+arg;
-		if(isNaN(order)) {
-			illegal.push(arg);
-		} else {
-			orders.push(order);
-		}
-	});
-	orders.sort((a, b) => a-b);
-	
-	if(illegal.length) {
-		return msg.reply("**ERROR**: illegal argument" + (illegal.length>1?"s":"") + ": " + illegal.join(" "));
-	}
-	
-	if(passive) {
-		return loader.require('kfet').then(kfet => {
-			let add=addOrders(msg, orders.filter(order => !kfet.get(order-1)));
-			let list=listOrders(msg, orders);
-			return Promise.all([add, list]);
-		});
-	} else {
-		return listOrders(msg, orders);
-	}
-};
-shared.commands.kfet.usage=[
-	{
-		name: '"register"',
-		required: false,
-		desc: "Si présent, la commande passe en mode passif"
-	},
-	{
-		name: 'order',
-		required: false,
-		desc: "Numéro (multiple acceptés) de commande. Requis en mode passif"
-	}
-];
-shared.commands.kfet.help={
-	name: 'kfet',
-	desc: "Affiche les commandes sorties ou non\n"+
-	"En mode passif, attend que la commande donnée sorte, et nous @ping",
-	admin: false,
-	category: 'util'
-};
-
-module.type='command';
-module.unload=() => {
-	// remove the command
-	delete shared.commands.kfet;
-	
-	loader.require('kfet').then(() => {
-		// remove the handler
-		let idx=shared.kfet.handlers.indexOf(handler);
-		if(idx!=-1) {
-			shared.kfet.splice(idx, 1);
-		}
-	});
-	
-	// remove the crontab
-	cron.remove(cronID);
-};
+	};
+})();

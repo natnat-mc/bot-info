@@ -1,0 +1,12 @@
+<table id="orders">
+	<% for(let i=0; i<10; i++) { %>
+		<tr>
+			<% for(let j=0; j<10; j++) { %>
+				<td class="<%- orders[''+(i*10+j+1)] || 'waiting' %>" id="order-<%= (i*10+j+1) %>">
+					<%= i*10+j+1 %>
+				</td>
+			<% } %>
+		</tr>
+	<% } %>
+</table>
+

@@ -1,118 +1,189 @@
-const request=require('request');
-const {JSDOM}=require('jsdom');
+const app=require('./app');
+const storage=require('./storage');
 const cron=require('./cron');
 
-if(!shared.kfet) {
-	shared.kfet={};
-}
+const router=require('express').Router();
+const EE=require('events');
 
-/** global KFet array
- * boolean array, from 0-99
- * true if it is done
- */
-if(!shared.kfet.avail) {
-	shared.kfet.avail=[];
-	for(let i=0; i<100; i++) shared.kfet.avail[i]=false;
-}
-
-/** global handler array
- * everything in there will be called with an object describing the change
- * if the property once is set, then it will be removed automatically afterwards
- */
-if(!shared.kfet.handlers) {
-	shared.kfet.handlers=[];
-}
-
-/** update KFet data
- * read the DOM from https://iutdoua-web.univ-lyon1.fr/~p1700290/KfetBDE/
- * select everything by ID in range (1-100)
- * find its class, if it's .tdVertConsult it's done
- * store everything in a global array
- */
-function reloadKfet() {
-	return new Promise((resolve, reject) => {
-		// read the raw JSON
-		request('https://kfet.bdeinfo.org/?page=api_commandes', (err, head, body) => {
-			if(err) {
-				return reject(err);
-			} else if(head.statusCode!=200) {
-				return reject(new Error('status code is '+head.statusCode));
-			}
-			try {
-				resolve(JSON.parse(body));
-			} catch(e) {
-				reject(e);
-			}
-		});
-	}).then(json => {
-		// get their status
-		let arr=[];
-		for(let i=0; i<100; i++) {
-			let part=json[i+1+''];
-			arr[i]=part && part.statut=='T' || false;
+(async () => {
+	if(!shared.kfet) {
+		shared.kfet={};
+	}
+	
+	/** global KFet emitter
+	 * ok(id): triggered when an order becomes ready
+	 * ko(id): triggered when an order has a problem
+	 * waiting(id): triggered when an order goes back to waiting
+	 * clear: triggered when all orders are cleared
+	 */
+	if(!shared.kfet.emitter) {
+		shared.kfet.emitter=new EE();
+	}
+	
+	/** global KFet dict
+	 * associates state to command id
+	 * 'ok': order is ready
+	 * 'ko': order has a problem
+	 * 'waiting'||undefined: order is being prepared
+	 */
+	await storage.ensureStore('kfet');
+	shared.kfet.avail=Object.create(null);
+	try {
+		let avail=await storage.get('kfet', 'avail');
+		for(let k in avail) {
+			shared.kfet.avail[k]=avail[k];
 		}
-		return arr;
-	}).then(avail => {
-		// get a diff
-		let diff={
-			added: [],
-			removed: []
-		};
-		for(let i=0; i<100; i++) {
-			if(avail[i]!=shared.kfet.avail[i]) {
-				shared.kfet.avail[i]=avail[i];
-				if(avail[i]) diff.added.push(i);
-				else diff.removed.push(i);
-			}
-		}
-		return diff;
-	}).then(diff => {
-		let toRem=[];
-		
-		// call the handlers
-		if(diff.added.length || diff.removed.length) {
-			shared.kfet.handlers.forEach((handler, idx) => {
-				handler(diff);
-				if(handler.once) toRem.unshift(idx);
+	} catch(e) {
+		await storage.set('kfet', 'avail', {});
+	}
+	
+	/** KFet automatic reset at 15h
+	 */
+	const cronID=cron('0	15	0	*	*', async () => {
+		shared.kfet.avail=Object.create(null);
+		await storage.set('kfet', 'avail', {});
+		shared.kfet.emitter.emit('clear');
+	});
+	
+	/** KFet web router
+	 * handles the web API and UI for the kfet
+	 */
+	function authenticate(req, res, fail) {
+		let ok=config("kfet.passwords").includes(req.query.password || req.get('Password'));
+		if(!ok && fail) {
+			res.status(401).json({
+				ok: false,
+				err: "Invalid password"
 			});
 		}
-		
-		// remove old handlers
-		toRem.forEach(idx => {
-			shard.kfet.handlers.splice(idx, 1);
-		});
-	}).then(() => {
-		console.log('Reloaded KFet');
-	}).catch(e => {
-		console.error('Failed reloading KFet', e);
-	});
-}
-
-/** KFet getter
- * if called with an int, returns a boolean
- * if called with an array, returns an array of booleans
- */
-exports.get=function(idx) {
-	if(Array.isArray(idx)) {
-		return idx.map(idx => shared.kfet.avail[idx]);
+		return ok;
 	}
-	return shared.kfet.avail[idx];
-}
-
-/** install crontab rule
- * every minute (*)
- * starting at 8AM, ending at 3PM (8-15)
- * everyday of week (1-5)
- * every month (*)
- * no particular day of month (0)
- */
-const cronID=cron('*	8-15	1-5	*	0', reloadKfet);
-
-// run it at least once
-reloadKfet();
-
-module.type='service'
-module.unload=() => {
-	// uninstall crontab rule
-	cron.remove(cronID);
-};
+	function validateBody(req, res) {
+		for(let k in req.body) {
+			if(isNaN(+k) || +k<1) {
+				res.status(400).json({
+					ok: false,
+					err: "Invaild key: "+k
+				});
+				return false;
+			}
+			if(req.body[k]!='ok' && req.body[k]!='ko' && req.body[k]!='waiting') {
+				res.status(400).json({
+					ok: false,
+					err: "Invalid value: "+req.body[k]
+				});
+				return false;
+			}
+		}
+		return true;
+	}
+	router.get('/orders', async (req, res) => {
+		res.json(shared.kfet.avail);
+	});
+	router.put('/orders', async (req, res) => {
+		if(!authenticate(req, res, true) || !validateBody(req, res)) {
+			return;
+		}
+		for(let k in req.body) {
+			let o=shared.kfet.avail[k]||'waiting';
+			let n=req.body[k];
+			if(o!=n) {
+				shared.kfet.emitter.emit(n, +k);
+			}
+			shared.kfet.avail[k]=n;
+		}
+		for(let k in shared.kfet.avail) {
+			if(!(k in req.body)) {
+				shared.kfet.emitter.emit('waiting', +k);
+				delete shared.kfet.avail[k];
+			}
+		}
+		await storage.set('kfet', 'avail', shared.kfet.avail);
+		await storage.writeStore('kfet');
+		return res.json({
+			ok: true
+		});
+	});
+	router.post('/orders', async (req, res) => {
+		if(!authenticate(req, res, true) || !validateBody(req, res)) {
+			return;
+		}
+		for(let k in req.body) {
+			let o=shared.kfet.avail[k]||'waiting';
+			let n=req.body[k];
+			if(o!=n) {
+				shared.kfet.emitter.emit(n, +k);
+			}
+			shared.kfet.avail[k]=n;
+		}
+		await storage.set('kfet', 'avail', shared.kfet.avail);
+		await storage.writeStore('kfet');
+		return res.json({
+			ok: true
+		});
+	});
+	router.get('/orders/:n', async (req, res) => {
+		if(isNaN(+req.params.n) || +req.params.n<1) return res.status(400).json({
+			ok: false,
+			err: "Invalid key: "+req.params.n
+		});
+		return res.json({status: shared.kfet.avail[req.params.n] || 'waiting'});
+	});
+	router.put('/orders/:n', async (req, res) => {
+		if(!authenticate(req, res, true)) {
+			return;
+		}
+		if(isNaN(+req.params.n) || +req.params.n<1) return res.status(400).json({
+			ok: false,
+			err: "Invalid key: "+req.params.n
+		});
+		if(req.body.status!='ok' && req.body.status!='ko' && req.body.status!='waiting') return res.status(400).json({
+			ok: false,
+			err: "Invalid value: "+req.body.status
+		});
+		if(shared.kfet.avail[req.params.n]!=req.body.status) {
+			shared.kfet.emitter.emit(req.body.status, +req.params.n);
+		}
+		shared.kfet.avail[req.params.n]=req.body.status;
+		await storage.set('kfet', 'avail', shared.kfet.avail);
+		await storage.writeStore('kfet');
+		return res.json({ok: true});
+	});
+	router.all('/verifyPassword', (req, res) => {
+		return res.json({ok: authenticate(req, res, false)});
+	});
+	router.get('/', (req, res) => {
+		res.render('kfet_template.ejs', {
+			page: 'kfet_orders',
+			title: "Commandes",
+			showControls: true,
+			data: {
+				orders: shared.kfet.avail
+			}
+		});
+	});
+	router.get('/login', (req, res) => {
+		res.render('kfet_template.ejs', {
+			page: 'kfet_login',
+			title: 'Login',
+			showControls: false,
+			data: {}
+		});
+	});
+	app.use('/kfet', router);
+	
+	/** internal API
+	 */
+	module.exports.get=function get(id) {
+		return shared.kfet.avail[id+''] || 'waiting';
+	};
+	module.exports.list=function list() {
+		return Object.keys(shared.kfet.avail).map(a => ''+a);
+	};
+	
+	module.type='service'
+	module.unload=async () => {
+		await storage.writeStore('kfet', true);
+		cron.remove(cronID);
+	};
+})();
