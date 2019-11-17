@@ -65,12 +65,16 @@ const discord=require('./discord');
 	shared.commands.kfet=async (msg, args) => {
 		// read subcommand
 		let mode='get';
+		let argmode='list';
 		if(args[0]=='register') {
 			mode=args.shift();
 		} else if(args[0]=='unregister') {
 			mode=args.shift();
 		} else if(args[0]=='get') {
 			mode=args.shift();
+		} else if(args[0]=='set') {
+			mode=args.shift();
+			argmode='kv';
 		} else if(args.length!=0 && isNaN(+args[0])) {
 			return msg.reply("**ERROR**: Available subcommands: `get`, `register`, `unregister`");
 		}
@@ -79,10 +83,21 @@ const discord=require('./discord');
 		let channel=msg.channel.id;
 		let user=msg.author.id;
 		
-		// parse order list
-		args=args.map(a => +a);
-		if(args.some(a => isNaN(a)||a%1||a<1)) {
-			return msg.reply("**ERROR**: Order IDs are strictly positive integers");
+		// parse remaining arguments
+		if(argmode=='list') {
+			args=args.map(a => +a);
+			if(args.some(a => isNaN(a)||a%1||a<1)) {
+				return msg.reply("**ERROR**: Order IDs are strictly positive integers");
+			}
+		} else if(argmode=='kv') {
+			args[0]=+args[0];
+			if(isNaN(args[0]) || args[0]%1 || args[0]<1) {
+				return msg.reply("**ERROR**: Order IDs are strictly positive integers");
+			}
+			args[1]=args[1].toLowerCase();
+			if(args[1]!='ok' && args[1]!='ko' && args[1]!='waiting') {
+				return msg.reply("**ERROR**: State must be one of 'ok', 'ko' or 'waiting'");
+			}
 		}
 		
 		// 'get' subcommand
@@ -105,6 +120,17 @@ const discord=require('./discord');
 			
 			// send the generated RichEmbed back
 			return msg.reply(embed);
+		}
+		
+		// 'set' subcommand
+		else if(mode=='set') {
+			// make sure we have the permission to do that
+			if(!config('kfet.writeAccess').includes(user)) {
+				return msg.reply("**ERROR**: Insufficient permissions");
+			}
+			
+			kfet.set(args[0], args[1]);
+			await msg.reply("successfuly updated order **#"+args[0]+"**");
 		}
 		
 		// 'register' subcommand

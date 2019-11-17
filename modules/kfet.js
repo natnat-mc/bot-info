@@ -177,6 +177,12 @@ const EE=require('events');
 	module.exports.get=function get(id) {
 		return shared.kfet.avail[id+''] || 'waiting';
 	};
+	module.exports.set=function get(id, state) {
+		if(state!='ok' && state!='ko' && state!='waiting') {
+			throw new TypeError("state must be one of 'ok', 'ko' or 'waiting'");
+		}
+		shared.kfet.avail[id+'']=state;
+	};
 	module.exports.list=function list() {
 		return Object.keys(shared.kfet.avail).map(a => ''+a);
 	};
