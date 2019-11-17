@@ -5,5 +5,5 @@ shared.autoresponders.push(alexaplaydespacito);
 
 module.type='autoresponder';
 module.unload=() => {
-	shared.autoresponders.remove(shared.autoresponders.indexOf(alexaplaydespacito));
+	shared.autoresponders.splice(shared.autoresponders.indexOf(alexaplaydespacito), 1);
 };
