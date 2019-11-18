@@ -181,6 +181,10 @@ const EE=require('events');
 		if(state!='ok' && state!='ko' && state!='waiting') {
 			throw new TypeError("state must be one of 'ok', 'ko' or 'waiting'");
 		}
+		let o=shared.kfet.avail[id+'']||'waiting';
+		if(o!=state) {
+			shared.kfet.emitter.emit(state, +id);
+		}
 		shared.kfet.avail[id+'']=state;
 	};
 	module.exports.list=function list() {
