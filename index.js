@@ -1,8 +1,6 @@
 const Discord=require('discord.js');
-const fs=require('fs');
 
 const shared=require('./api/shared');
-
 const config=require('./api/config');
 const commands=require('./api/commands');
 const autorespond=require('./api/autoresponders');
