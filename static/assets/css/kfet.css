@@ -126,6 +126,16 @@ nav a {
   padding: 5px;
   font-size: 2rem;
 }
+nav .mode-selected {
+  color: gray;
+  font-weight: bold;
+}
+nav .mode-selected::before {
+  content: '>';
+}
+nav .mode-selected::after {
+  content: '<';
+}
 main {
   display: flex;
   flex-direction: row;
@@ -152,6 +162,11 @@ footer {
   background-position: right;
   background-repeat: no-repeat;
   background-size: contain;
+}
+@media (max-width: 800px) {
+  #orders td {
+    font-size: 2rem;
+  }
 }
 #orders td.ok {
   background-color: green;

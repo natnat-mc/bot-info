@@ -13,6 +13,7 @@ function ajax(method, url, query, body, headers, json) {
 		xhr.open(method, url, true);
 		if(typeof body=='object') {
 			xhr.setRequestHeader('Content-Type', 'application/json');
+			body=JSON.stringify(body);
 		}
 		for(let h in headers) {
 			xhr.setRequestHeader(k, headers[k]);
@@ -87,6 +88,23 @@ async function update() {
 	}
 }
 
+async function setState(id, state) {
+	let res=await ajax('PUT', 'orders/'+id, {password}, {status: state}, 0, true);
+	if(res.ok) {
+		document.querySelector("#order-"+id).classList.value=state;
+		return true;
+	} else {
+		throw new Error(res.err);
+	}
+}
+
+let mode;
+function setMode(m) {
+	mode=m;
+	document.querySelectorAll('.mode').forEach(a => a.classList.remove('mode-selected'));
+	document.querySelector('.mode-'+m).classList.add('mode-selected');
+}
+
 // main code
 (async () => {
 	// await load
@@ -96,7 +114,27 @@ async function update() {
 		if(document.readyState=='complete') ok();
 	});
 	
+	// order list page
 	if(document.querySelector('#orders')) {
-		setInterval(update, 1000*10); // 10s
+		// setup autoreload
+		setInterval(update, 1000*10);
+		
+		if(loggedIn) {
+			// set mode to 'ok' by default
+			setMode('ok');
+			
+			// add click listeners to orders
+			for(let i=1; i<=100; i++) {
+				let td=document.querySelector('#order-'+i);
+				td.addEventListener('click', e => {
+					e.preventDefault();
+					if(td.classList.contains(mode)) {
+						setState(i, 'waiting');
+					} else {
+						setState(i, mode);
+					}
+				});
+			}
+		}
 	}
 })();

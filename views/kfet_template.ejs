@@ -3,6 +3,7 @@
 	<head>
 		<title>KFet Info - <%= title %></title>
 		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="stylesheet" href="/assets/css/kfet.css" />
 		<script src="/assets/js/kfet.js"></script>
 	</head>
@@ -15,8 +16,9 @@
 				<a href=".">Accueil</a>
 				<% if(showControls) { %>
 					<span class="loggedin direct">
-						<a href="#" onclick="setMode('normal');" class="mode">Normal</a>
-						<a href="#" onclick="setMode('error');" class="mode">Erreur</a>
+						<a href="#" onclick="setMode('ok');" class="mode mode-ok">Donné</a>
+						<a href="#" onclick="setMode('waiting');" class="mode mode-waiting">En cours</a>
+						<a href="#" onclick="setMode('ko');" class="mode mode-ko">Erreur</a>
 					</span>
 				<% } %>
 			</span>
