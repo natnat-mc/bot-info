@@ -61,10 +61,13 @@ shared.commands.edt=function(msg, args) {
 	else if(/[0-3]?[0-9]\/[01]?[0-9]\/?[0-9]*/.test(args[1])) {
 		let parts=args[1].split('/');
 		let date=new Date();
+		date.setDate(parts[0]);
+		date.setMonth(parts[1]-1);
 		if(parts[2]!==undefined) date.setFullYear(parts[2]);
 		date.setMonth(parts[1]-1);
 		date.setDate(parts[0]);
 		evts=cal.getForDay(date);
+		console.log(date, evts, parts, dates.dateToParts(date));
 	} else {
 		return msg.reply("**ERROR**: wrong date format");
 	}
