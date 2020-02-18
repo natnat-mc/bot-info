@@ -32,9 +32,10 @@ function createEmbed(evts) {
 			let partsSt=dates.dateToParts(evt.start);
 			let partsEd=dates.dateToParts(evt.end);
 			let teacher=evt.desc.match(/^\\n\\n.+\\n(.+)\\n/);
+			let name=evt.name.replace(/Rust/i, "🦀Rust🦀");
 			teacher=teacher?teacher[1]:'Unknown teacher';
 			str+=partsSt.hour+':'+partsSt.minute+' -> '+partsEd.hour+':'+partsEd.minute+'\t';
-			str+='**'+evt.name+'** en '+evt.loc+'\t';
+			str+='**'+name+'** en '+evt.loc+'\t';
 			str+='avec *'+teacher+'*';
 			return str;
 		}).join('\n'));
