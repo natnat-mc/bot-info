@@ -65,9 +65,81 @@ function datesToRange(a, b) {
 	}
 }
 
+/** date parser
+ * returns a date from a string in `[YYYY-]MM-DD[ hh:mm[:ss]]`, `DD/MM[/[YY]YY][ hh:mm[:ss]]` or `<+|->n<m|h|D|W|M>` format
+ */
+function dateParse(str) {
+	let iso=str.match(/^(?:(\d{4})-)?(\d{1,2})-(\d{1,2})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/);
+	if(iso) {
+		let d=new Date();
+		for(let i=0; i<2; i++) { // weird bugs if we only do it once
+			if(iso[1]!==undefined) d.setFullYear(+iso[1]);
+			d.setMonth((+iso[2])-1);
+			d.setDate(+iso[3]);
+			if(iso[4]!==undefined) {
+				d.setHours(+iso[4]);
+				d.setMinutes(+iso[5]);
+				if(iso[6]!==undefined) d.setSeconds(+iso[6]);
+			}
+		}
+		return d;
+	}
+	let natural=str.match(/^(\d{1,2})\/(\d{1,2})(?:\/((?:\d{2})?\d{2}))?(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/);
+	if(natural) {
+		let d=new Date();
+		for(let i=0; i<2; i++) { // weird bugs if we only do it once
+			d.setDate(+natural[1]);
+			d.setMonth((+natural[2])-1);
+			if(natural[3]!==undefined) {
+				if((+natural[3])>=100) d.setFullYear(+natural[3]);
+				else d.setFullYear(d.getFullYear()/100+''+natural[3]);
+			}
+			if(natural[4]!==undefined) {
+				d.setHours(+natural[4]);
+				d.setMinutes(+natural[5]);
+				if(natural[6]!==undefined) d.setSeconds(+natural[5]);
+			}
+		}
+		return d;
+	}
+	let relative=str.match(/^([+-])(\d+)([mhDWM])/);
+	if(relative) {
+		let d=new Date();
+
+		let sign=relative[1]=='+'?1:-1;
+		let magnitude=+relative[2];
+		let unit=relative[3];
+
+		if(unit=='M') {
+			d.setMonth(d.getMonth()+sign*magnitude);
+			return d;
+		}
+
+		let multiplier;
+		switch(unit) {
+			case 'm':
+				multiplier=oneMinute;
+				break;
+			case 'h':
+				multiplier=oneHour;
+				break;
+			case 'D': case 'd':
+				multiplier=oneDay;
+				break;
+			case 'W': case 'w':
+				multiplier=oneWeek;
+				break;
+		}
+		d.setTime(d.getTime()*1000);
+		return d;
+	}
+}
+
+
 exports.dateToTime=dateToTime;
 exports.dateToParts=dateToParts;
 exports.datesToRange=datesToRange;
+exports.dateParse=dateParse;
 
 exports.oneSec=oneSec;
 exports.oneMin=oneMin;

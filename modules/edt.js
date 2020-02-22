@@ -1,6 +1,45 @@
 const Discord=require('discord.js');
 const dates=require('./dates');
 
+function createText(evts) {
+	// create a text message
+	let header="**Emploi du temps**\n";
+	header+="http://edt.univ-lyon1.fr\n\n";
+
+	// accumulate events by day
+	let byDay=evts.reduce(
+			(acc, evt) => {
+				let parts=dates.dateToParts(evt.start);
+				let day=parts.day+'/'+parts.month+'/'+parts.year;
+				if(!acc[day]) acc[day]=[];
+				acc[day].push(evt);
+				return acc;
+			},
+			{}
+		);
+	let days=Object.keys(byDay).sort();
+
+	// represent the events textually
+	let body=days.map(
+		day => {
+			return '**'+
+				day+
+				'**\n'+
+				byDay[day]
+				.map(evt => {
+					let st=dates.dateToParts(evt.start);
+					let ed=dates.dateToParts(evt.end);
+					let teacher=evt.desc.match(/^\\n\\n.+\\n(.+)\\n/);
+					teacher=teacher?teacher[1]:'Unknown teacher';
+					return `${st.hour}:${st.minute} -> ${ed.hour}:${ed.minute}\t**${evt.name}** @${evt.loc} [${teacher}]`;
+				})
+				.join('\n');
+		}
+	).join('\n\n');
+
+	return header+body;
+}
+
 function createEmbed(evts) {
 // create the RichEmbed
 	let embed=new Discord.RichEmbed();
@@ -45,59 +84,71 @@ function createEmbed(evts) {
 }
 
 shared.commands.edt=function(msg, args) {
-	if(args.length!=2) {
-		return msg.reply("**ERROR**: wrong command format");
+	let txt=false;
+	if(args[0]=='-t') {
+		txt=true;
+		args.shift();
 	}
 
-	// find calendar
-	let cal=shared.calendars[args[0].toLowerCase()];
-	if(!cal) return msg.reply("Ce calendrier n\'existe pas");
+	let mode='week';
+	let date=new Date();
+	if(args[0]=='day') {
+		mode='day';
+	} else if(args[0]=='next') {
+		date=new Date(Date.now()+dates.oneWeek);
+	} else if(args[0]=='tomorrow') {
+		mode='day';
+		date=new Date(Date.now()+dates.oneDay);
+	} else if(args[0]!='week' && args[0]!==undefined) {
+		mode='day';
+		date=dates.dateParse(args[0]);
+		if(!date) {
+			return msg.reply("Date invalide\n*le format de la commande `?edt` a changé: `?edt [-t] [date [groupe]]`*");
+		}
+	}
 
-	// read the calendar
+	const guild=shared.bot.guilds.get(config('bot.server'));
+	const member=guild.members.get(msg.author.id);
+	const roles=member.roles.map(r => r.id);
+	let group=config('groups').find(g => roles.includes(g.role));
+	if(group) group=group.name;
+	if(args[1]!==undefined) group=args[1];
+	if(group===undefined || group===null || !shared.calendars[group.toLowerCase()]) {
+		return msg.reply("Groupe non trouvé");
+	}
+
+	const cal=shared.calendars[group.toLowerCase()];
 	let evts;
-	if(args[1]==='' || args===undefined || args[1]=='week') evts=cal.getForWeek();
-	else if(args[1]=='today') evts=cal.getForDay();
-	else if(args[1]=='tomorrow') evts=cal.getForDay(new Date(Date.now()+dates.oneDay));
-	else if(args[1]=='next') evts=cal.getForWeek(new Date(Date.now()+dates.oneWeek));
-	else if(/[0-3]?[0-9]\/[01]?[0-9]\/?[0-9]*/.test(args[1])) {
-		let parts=args[1].split('/');
-		let date=new Date();
-		date.setDate(parts[0]);
-		date.setMonth(parts[1]-1);
-		if(parts[2]!==undefined) date.setFullYear(parts[2]);
-		date.setMonth(parts[1]-1);
-		date.setDate(parts[0]);
-		evts=cal.getForDay(date);
-		console.log(date, evts, parts, dates.dateToParts(date));
-	} else {
-		return msg.reply("**ERROR**: wrong date format");
-	}
+	if(mode=='week') evts=cal.getForWeek(date);
+	else evts=cal.getForDay(date);
 
-	// check for empty days/weeks
-	if(!evts.length) {
-		return msg.reply('**PAS DE COURS SUR CETTE PERIODE**');
-	}
-
-	// send the embed if available
-	return msg.reply(createEmbed(evts));
-};
+	let resp;
+	if(txt) resp=createText(evts);
+	else resp=createEmbed(evts);
+	return msg.reply(resp);
+}
 
 shared.commands.edt.usage=[
 	{
-		name: 'group',
-		required: true,
-		desc: "Le groupe dont il faut afficher l'EDT, de la forme **g**n**s**n"
+		name: '-t',
+		required: false,
+		desc: "Passe en mode texte au lieu du mode embed"
 	},
 	{
 		name: 'time',
 		required: false,
 		desc: "La plage à afficher. `next` affiche la semaine prochaine, `today` affiche aujourd'hui, `tomorrow` affiche demain, une date explicite affiche le jour en question et `week` affiche la semaine en cours (une semaine commence le dimanche pour le bot)"
+	},
+	{
+		name: 'group',
+		required: false,
+		desc: "Le groupe dont il faut afficher l'EDT, de la forme **g**n**s**n, tente automatiquement de détecter le groupe si non fourni"
 	}
 ];
 
 shared.commands.edt.help={
 	name: 'edt',
-	desc: "Affiche l'emploi du temps sous la forme d'un RichEmbed. Les emplois du temps sont mis à jour toutes les heures.",
+	desc: "Affiche l'emploi du temps sous la forme d'un RichEmbed ou sous forme d'un texte'. Les emplois du temps sont mis à jour toutes les heures.",
 	admin: false,
 	category: 'util'
 };
@@ -108,3 +159,4 @@ module.unload=() => {
 };
 
 exports.createEmbed=createEmbed;
+exports.createText=createText;
