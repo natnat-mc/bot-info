@@ -102,7 +102,7 @@ function dateParse(str) {
 		}
 		return d;
 	}
-	let relative=str.match(/^([+-])(\d+)([mhDWM])/);
+	let relative=str.match(/^([+-])(\d+)([mhdDwWM])/);
 	if(relative) {
 		let d=new Date();
 
@@ -130,7 +130,7 @@ function dateParse(str) {
 				multiplier=oneWeek;
 				break;
 		}
-		d.setTime(d.getTime());
+		d.setTime(d.getTime()+sign*multiplier*magnitude);
 		return d;
 	}
 }
