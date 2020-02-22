@@ -121,7 +121,7 @@ function dateParse(str) {
 				multiplier=oneMinute;
 				break;
 			case 'h':
-				multiplier=oneHour;
+				multiplier=oneHr;
 				break;
 			case 'D': case 'd':
 				multiplier=oneDay;
@@ -130,7 +130,7 @@ function dateParse(str) {
 				multiplier=oneWeek;
 				break;
 		}
-		d.setTime(d.getTime()*1000);
+		d.setTime(d.getTime());
 		return d;
 	}
 }
