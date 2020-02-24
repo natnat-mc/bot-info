@@ -1,8 +1,10 @@
 const Discord=require('discord.js');
 
 function roll(dice) {
+	if(dice.length>10) throw new Error();
 	let rolls=dice.map(die => {
 		let [_, n, v, m]=die.match(/(\d+)?d(\d+)(?:-(\d+))?/);
+		if(n>100) throw new Error();
 		let [min, max]=m!==undefined?[v, m]:[1, v];
 		let arr=[];
 		for(let i=0; i<(n||1); i++) {
