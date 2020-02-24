@@ -1,20 +1,34 @@
 const Discord=require('discord.js');
 
-const _0=s=>{let o=[],i,t;s.replace(/(\d*)d(\d+)/g,(k,a,b)=>{if(a>50)throw new Error('Too many dice');t=[];for(i=a||1;i;i--)t[i-1]=Math.floor(Math.random()*b)+1;o.push({command:k,values:t})});return o};
+function roll(dice) {
+	let rolls=dice.map(die => {
+		let [_, n, v, m]=die.match(/(\d+)?d(\d+)(?:-(\d+))?/);
+		let [min, max]=m!==undefined?[v, m]:[1, v];
+		let arr=[];
+		for(let i=0; i<(n||1); i++) {
+			arr.push(Math.floor(Math.random()*(max-min+1)+min));
+		}
+		let sum=arr.reduce((a, b) => a+b);
+		return {die, arr, sum};
+	});
+	let sum=rolls.map(r => r.sum).reduce((a, b) => a+b);
+	return {rolls, sum};
+}
 
-shared.commands.roll=async function(msg, args) {
-	let rolls;
+shared.commands.roll=function(msg, args) {
 	try {
-		rolls=_0(args.join(' '));
+		let {rolls, sum}=roll(args);
+		let embed=new Discord.RichEmbed();
+		embed.setTitle("Roll: "+args.join(' '));
+		embed.setTimestamp(new Date());
+		embed.addField("Total", sum);
+		rolls.forEach(roll => {
+			embed.addField(roll.die, roll.arr.map(a => '`'+a+'`').join('+')+" = **"+roll.sum+"**");
+		});
+		return msg.reply(embed);
 	} catch(e) {
-		return await msg.reply("Too many dice");
+		return msg.reply("Invalid rolls");
 	}
-	
-	let embed=new Discord.RichEmbed();
-	embed.setTitle("Roll");
-	embed.setTimestamp(new Date());
-	rolls.forEach(roll => embed.addField(roll.command, roll.values.map(a => '`'+a+'`').join(' ')));
-	return await msg.reply(embed);
 };
 
 shared.commands.roll.usage=[
