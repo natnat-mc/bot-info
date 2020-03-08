@@ -9,7 +9,7 @@ function createText(evts) {
 	// accumulate events by day
 	let byDay=evts.reduce(
 			(acc, evt) => {
-				let parts=dates.dateToParts(evt.start);
+				let parts=dates.dateToParts2(evt.start);
 				let day=parts.day+'/'+parts.month+'/'+parts.year;
 				if(!acc[day]) acc[day]=[];
 				acc[day].push(evt);

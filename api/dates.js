@@ -50,6 +50,17 @@ function dateToParts(date) {
 	return keys;
 }
 
+/** date to object converter - 2 digits
+ * returns an object containing all the useful components of a date, on 2 digits
+ */
+function dateToParts2(date) {
+	let parts=dateFormater.formatToParts(date);
+	let keys={};
+	for(i=0; i<parts.length; i++) keys[parts[i].type]=parts[i].value;
+	keys.dayOfWeek=new Date(keys.year, keys.month-1, keys.day).getDay();
+	return keys;
+}
+
 /** dates to range converter
  * returns a range in the format 'DD/MM/AAAA hh:mm:ss -> hh:mm:ss'
  *  or 'DD/MM/AAAA hh:mm:ss -> DD/MM/AAAA hh:mm:ss'
@@ -138,6 +149,7 @@ function dateParse(str) {
 
 exports.dateToTime=dateToTime;
 exports.dateToParts=dateToParts;
+exports.dateToParts2=dateToParts2;
 exports.datesToRange=datesToRange;
 exports.dateParse=dateParse;
 
