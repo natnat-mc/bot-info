@@ -3,26 +3,18 @@ const dates=require('./dates');
 
 shared.commands.modules=function(msg, args) {
 	let mods=module.loader.list;
-	let embed=new Discord.RichEmbed();
-	embed.setTitle('Liste des modules');
-	embed.setTimestamp(new Date());
+	let rpl="```markdown\n";
+	rpl+="# Liste des modues\n";
 	mods.forEach(function(module) {
-		let desc=[];
-		if(module.type) {
-			desc.push('type: '+module.type);
-		}
+		let desc=["## "+module.name];
+		desc.push('- type: '+module.type);
 		if(module.desc) {
-			desc.push('description: '+module.desc);
+			desc.push('- desc: '+module.desc);
 		}
-		if(module.loadTime) {
-			desc.push('date de chargement: '+dates.dateToTime(module.loadTime));
-		}
-		if(!desc.length) {
-			desc.push("[PAS D'INFORMATIONS DISPONIBLES]");
-		}
-		embed.addField(module.name, desc.join('\n'));
+		rpl+=desc.join('\n')+'\n';
 	});
-	return msg.reply(embed);
+	rpl+="```";
+	return msg.reply(rpl);
 };
 
 shared.commands.modules.usage=[];
