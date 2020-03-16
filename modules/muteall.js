@@ -23,7 +23,7 @@ const professeurs='687955219731972116';
 		await Promise.all(channel.members.map(member => {
 			return member.setMute(false).catch(console.error);
 		}));
-		await msg.reply("Les élèves ne peuvent de nouveau parler, `?muteall` pour les rendre muets");
+		await msg.reply("Les élèves peuvent de nouveau parler, `?muteall` pour les rendre muets");
 	};
 	module.unload=() => {
 		delete shared.commands.muteall;
