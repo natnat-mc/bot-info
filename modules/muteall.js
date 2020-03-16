@@ -13,6 +13,7 @@ const professeurs='687955219731972116';
 			if(!member.roles.find(r => r.id==professeurs)) return member.setMute(true).catch(console.error);
 			else return Promise.resolve();
 		}));
+		await msg.reply("Les élèves ne peuvent désormais plus parler, `?unmuteall` pour leur rendre la parole");
 	};
 	shared.commands.unmuteall=async (msg) => {
 		const sender=msg.member;
@@ -22,6 +23,7 @@ const professeurs='687955219731972116';
 		await Promise.all(channel.members.map(member => {
 			return member.setMute(false).catch(console.error);
 		}));
+		await msg.reply("Les élèves ne peuvent de nouveau parler, `?muteall` pour les rendre muets");
 	};
 	module.unload=() => {
 		delete shared.commands.muteall;
