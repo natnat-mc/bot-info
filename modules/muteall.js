@@ -25,5 +25,6 @@ const professeurs='687955219731972116';
 	};
 	module.unload=() => {
 		delete shared.commands.muteall;
+		delete shared.commands.unmuteall;
 	};
 })();
