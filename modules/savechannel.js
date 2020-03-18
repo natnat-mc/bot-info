@@ -2,9 +2,14 @@ module.type='command';
 module.desc="Permet aux professeurs de générer un fichier texte à partir du channel de cours";
 
 const dates=require('./dates');
+const professeurs='687955219731972116';
 const Discord=require('discord.js');
 
-shared.commands.savechannel=async (msg, args) =>{
+shared.commands.savechannel=async (msg, args) => {
+	if(!msg.member.roles.find(r => r.id==professeurs)) return await msg.reply("Vous n'êtes pas professeur");
+	let firstId=args[0] || '0';
+	if(firstId.match(/https:\/\/discordapp\.com\/channels\/\d+\/\d+\/\d+/)) firstId=firstId.split(/\//g).pop();
+	if(!firstId.match(/^\d+$/)) return await msg.reply("Syntaxe: `?savechannel [id du premier message, obtenu avec clic droit -> copier l'ID ou copier le lien]");
 	const chan=msg.channel;
 	const messages=[];
 	chan.messages.forEach(msg => {
@@ -16,9 +21,9 @@ shared.commands.savechannel=async (msg, args) =>{
 	});
 	try {
 		const m0=await msg.reply("Chargement des messages");
-		while(true) {
+		while(lastId>firstId) {
 			let msgs=await chan.fetchMessages({
-				before: lastId
+				before: lastId,
 			});
 			msgs.forEach(msg => {
 				messages.push(msg);
@@ -29,14 +34,16 @@ shared.commands.savechannel=async (msg, args) =>{
 		const m1=await msg.reply("Génération du fichier");
 		messages.sort((a, b) => a.createdAt-b.createdAt);
 		const txt=messages
+			.filter(m => m.id>=firstId)
 			.map(m => {
 				let parts=dates.dateToParts2(m.createdAt);
 				return `[${parts.hour}:${parts.minute}] ${m.member.displayName}: ${m.content}`;
 			})
 			.join('\n');
+		const filename=(chan.parent?chan.parent.name+'_':'')+chan.name+'.txt';
 		await msg.reply({
 			files: [
-				new Discord.Attachment().setFile(Buffer.from(txt, 'utf8')).setName(chan.parent.name+'_'+chan.name+'.txt')
+				new Discord.Attachment().setFile(Buffer.from(txt, 'utf8')).setName(filename)
 			]
 		});
 		await m0.delete();
