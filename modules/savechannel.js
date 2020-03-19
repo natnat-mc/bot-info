@@ -53,6 +53,19 @@ shared.commands.savechannel=async (msg, args) => {
 		await msg.reply("Echec de la sauvegarde du channel");
 	}
 };
+shared.commands.savechannel.help={
+	name: 'savechannel',
+	desc: "Enregistre un channel sous la forme d'un fichier texte",
+	admin: false,
+	category: 'corona'
+};
+shared.commands.savechannel.usage=[
+	{
+		name: 'début',
+		required: false,
+		desc: "Le lien (ou ID) du premier message à sauvegarder (clic droit -> copier le lien)"
+	}
+];
 
 module.unload=() => {
 	delete shared.commands.savechannel;
