@@ -3,7 +3,7 @@ module.desc="Permet aux utilisateurs de s'attribuer automatiquement les rôles c
 
 let handler=async (msg) => {
 	const nouveauVenu=shared.bot.guilds.get('687953396808155137').roles.get('688331886333919234');
-	let rmatch=msg.content.match(/^[?!]\s*(g\ds\d)/i);
+	let rmatch=msg.content.match(/^[?!]\s*((?:g\ds\d)|aspe)/i);
 	if(rmatch) {
 		let name=rmatch[1];
 		let role=msg.guild.roles.find(r => r.name.toLowerCase()==name.toLowerCase());
