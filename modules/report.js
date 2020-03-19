@@ -17,7 +17,7 @@ function awaitReport(user, channel, reason) {
 		shared.bot.once('messageReactionAdd', find);
 	}
 	find=findMessage;
-	
+
 	const reaction=new Promise((resolve, reject) => {
 		ok=resolve;
 		shared.bot.once('messageReactionAdd', find);
@@ -42,7 +42,7 @@ function report(msg, user, reason) {
 		else if(mention.type=='role') return '<@&'+mention.value+'>';
 		else return '';
 	}).join(', ');
-	
+
 	// pin the message and alert the mods
 	msg.pin().then(msg => {
 		return "pinned message in "+getMention(msg.channel.id, 'channel');
@@ -76,7 +76,7 @@ shared.commands.report=(msg, args) => {
 	if(!(id || user || arg0=='reaction')) return msg.reply("**ERROR**: invalid message spec");
 	let reason=args.join(' ');
 	if(!reason) reason="No reason given";
-	
+
 	// pin the message and react
 	if(user) {
 		// only a user was given, report the reporting message itself
@@ -122,6 +122,7 @@ shared.commands.report.usage=[
 ];
 
 module.type='command';
+module.desc="Permet de prévenir les admins en cas de problem avec un utilisateur";
 module.unload=() => {
 	delete shared.commands.report;
 };

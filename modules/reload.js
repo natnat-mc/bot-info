@@ -21,6 +21,7 @@ shared.commands.reload.help={
 };
 
 module.type='command';
+module.desc="Permet de recharger les modules et la configuration du bot";
 module.unload=() => {
 	delete shared.commands.reload;
 };

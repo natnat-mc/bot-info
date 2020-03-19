@@ -30,7 +30,7 @@ store.ensureStore('reminders').then(function() {
 		} else {
 			return msg.reply('**ERROR**: unknown suffix format');
 		}
-		
+
 		// load 'up' reminder
 		if(txt=='up') {
 			try {
@@ -39,7 +39,7 @@ store.ensureStore('reminders').then(function() {
 				return await msg.reply("You don't have an `up` reminder");
 			}
 		}
-		
+
 		// create reminder
 		let date=new Date(Date.now()+time);
 		let len;
@@ -59,7 +59,7 @@ store.ensureStore('reminders').then(function() {
 		}
 		msg.reply('Rappel enregistré pour '+dates.dateToTime(date));
 	};
-	
+
 	shared.commands.remind.usage=[
 		{
 			name: 'time',
@@ -78,16 +78,16 @@ store.ensureStore('reminders').then(function() {
 		admin: false,
 		category: 'util'
 	};
-	
+
 	tabID=cron.add(config('reminders.crontab'), async () => {
 		try {
 			const now=Date.now();
-			
+
 			// iterate all channels
 			const channels=await store.get('reminders');
 			const keys=Object.keys(channels).filter(a => !a.startsWith('up'));
 			for(let chanID of keys) {
-				
+
 				// get channel object and reminders
 				let reminders=channels[chanID];
 				let channel=shared.bot.channels.get(chanID);
@@ -96,7 +96,7 @@ store.ensureStore('reminders').then(function() {
 					console.log('purged channel', chanID);
 					await store.writeStore('reminders', true);
 				}
-				
+
 				// trigger reminders
 				let triggered=reminders.filter(a => a.timestamp<=now);
 				for(let reminder of triggered) {
@@ -104,7 +104,7 @@ store.ensureStore('reminders').then(function() {
 					await channel.send(msg);
 					await store.set('reminders', 'up'+reminder.user, reminder.message)
 				}
-				
+
 				// drop used reminders
 				if(triggered.length) {
 					console.log(triggered.length, 'reminders triggered for channel', chanID);
@@ -122,6 +122,7 @@ store.ensureStore('reminders').then(function() {
 });
 
 module.type='command';
+module.desc="Permet de gérer des rappels";
 module.unload=() => {
 	delete shared.commands.remind;
 	store.writeStore('reminders').catch(console.error);

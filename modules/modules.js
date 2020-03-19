@@ -27,6 +27,7 @@ shared.commands.modules.help={
 };
 
 module.type='command';
+module.desc="Permet de lister les modules chargés dans le bot";
 module.unload=() => {
 	delete shared.commands.modules;
 };

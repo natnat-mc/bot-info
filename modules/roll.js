@@ -49,6 +49,7 @@ shared.commands.roll.help={
 };
 
 module.type='command';
+module.desc="Permet de lancer des dés";
 module.unload=() => {
 	delete shared.commands.roll;
 };

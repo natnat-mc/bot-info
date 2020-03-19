@@ -93,6 +93,7 @@ shared.commands.brainfuck.help={
 };
 
 module.type='command';
+module.desc="Interpréteur Brainfuck https://en.wikipedia.org/wiki/Brainfuck";
 module.unload=() => {
 	delete shared.commands.brainfuck;
 };

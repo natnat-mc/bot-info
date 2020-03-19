@@ -21,6 +21,7 @@ shared.commands.tagadatsointsoin.help={
 };
 
 module.type='command';
+module.desc="Génère des tagadatsointsoins, cf le TP6 de C";
 module.unload=() => {
 	delete shared.commands.tagadatsointsoin;
 };

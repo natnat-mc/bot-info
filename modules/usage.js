@@ -40,6 +40,7 @@ shared.commands.usage.help={
 };
 
 module.type='command';
+module.desc="Permet d'afficher la syntaxe d'une commande";
 module.unload=() => {
 	delete shared.commands.usage;
 };

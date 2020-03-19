@@ -55,6 +55,7 @@ shared.commands.help.help={
 };
 
 module.type='command';
+module.desc="Permet d'afficher l'aide des commandes";
 module.unload=() => {
 	delete shared.commands.help;
 };
