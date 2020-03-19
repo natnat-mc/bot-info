@@ -25,7 +25,7 @@ shared.commands.room=function(msg, args) {
 	if(isNaN(time)) {
 		return msg.reply("**ERROR**: Failed to calculate time displacement");
 	}
-	
+
 	// get available rooms
 	let avail=[];
 	for(let k in shared.rooms) {
@@ -36,7 +36,7 @@ shared.commands.room=function(msg, args) {
 	}).map(room => {
 		return room.name;
 	});
-	
+
 	// create result embed
 	let embed=new Discord.RichEmbed();
 	embed.setTitle("Salles informatiques");
@@ -44,7 +44,7 @@ shared.commands.room=function(msg, args) {
 	for(let key in shared.rooms) {
 		embed.addField(key, (avail.indexOf(key)!=-1)?"Disponible":"Occupée", true);
 	}
-	
+
 	// return the result
 	return msg.reply(embed);
 };
@@ -65,6 +65,7 @@ shared.commands.room.usage=[
 ];
 
 module.type='command';
+module.desc="Permet de gérer les salles info libres";
 module.unload=() => {
 	// unregister the command
 	delete shared.commands.room;
