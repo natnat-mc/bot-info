@@ -154,6 +154,7 @@ shared.commands.edt.help={
 };
 
 module.type='command';
+module.desc="Permet la gestion de l'emploi du temps";
 module.unload=() => {
 	delete shared.commands.edt;
 };
