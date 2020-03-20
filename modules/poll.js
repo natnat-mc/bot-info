@@ -5,7 +5,7 @@ shared.commands.poll=async (msg, args) => {
 	let text="Sondage de "+msg.author+": "+args.shift();
 	args.forEach((t, i) => text+="\n"+String.fromCodePoint(0x1f1e6+i)+": "+t);
 	let poll=await msg.channel.send(text);
-	for(let i in args) {
+	for(let i=0; i<args.length; i++) {
 		await poll.react(String.fromCodePoint(0x1f1e6+i));
 	}
 };
