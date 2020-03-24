@@ -46,7 +46,7 @@ shared.commands.clearchannel.help={
 	admin: false,
 	category: 'corona'
 };
-shared.commands.savechannel.usage=[
+shared.commands.clearchannel.usage=[
 	{
 		name: 'début',
 		required: false,
