@@ -40,6 +40,8 @@ function commands(msg) {
  * 	\" => double quote
  * 	\\ => backslash
  * 	\  => space
+ * 	",'=> long argument
+ * 	`  => parse as-is
  * The backslash character by itself is invalid.
  */
 function parse(str) {
@@ -65,7 +67,10 @@ function parse(str) {
 	let current='';
 	for(let i=0; i<rawArgs.length; i++) {
 		let char=rawArgs[i];
-		if(escaped) {
+		if(quote=='`') {
+			if(char=='`') quote=null;
+			else current+=char;
+		} else if(escaped) {
 			// handle escape sequences
 			switch(char) {
 				case 'n':
@@ -93,7 +98,7 @@ function parse(str) {
 		} else if(char=='\\') {
 			// backslash starts an escape sequence
 			escaped=true;
-		} else if(char=='\'' || char=='\"') {
+		} else if(char=='\'' || char=='\"' || char=='`') {
 			// handle quotes
 			if(quote==char) {
 				quote=null;
