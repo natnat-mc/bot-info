@@ -5,6 +5,7 @@ shared.commands.tex=(msg, args) =>
 	msg.channel.send(
 		'https://chart.apis.google.com/chart?'
 		+ 'cht=tx&'
+		+ 'chs=50&'
 		+ 'chl='+encodeURIComponent(args.join(' ').replace(/`/g, ''))
 	);
 
